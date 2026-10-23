@@ -244,7 +244,7 @@
       return '';
     }
 
-  function parseLiveCsv(csvText) {
+function parseLiveCsv(csvText) {
       const lines = csvText.split(/\r?\n/).filter(l => l.trim().length > 0);
       const parsedShows = [];
       let currentMonth = 'January';
@@ -255,7 +255,7 @@
         const firstCell = (cols[0] || '').trim();
         const secondCell = (cols[1] || '').trim();
 
-        // Dynamically capture the header row containing column titles
+        // Capture exact header column positions dynamically from row 1
         if (firstCell.toLowerCase().includes('artist / show') || cols.some(c => c.toLowerCase().includes('load in'))) {
           colMap = {};
           cols.forEach((h, idx) => {
@@ -265,7 +265,7 @@
           continue;
         }
 
-        // Detect month section headers
+        // Detect month sections
         if (!firstCell && /^(January|February|March|April|May|June|July|August|September|October|November|December)$/i.test(secondCell)) {
           currentMonth = secondCell;
           continue;
@@ -275,7 +275,7 @@
           continue;
         }
 
-        // Helper to find data by checking multiple possible header variations
+        // Flexible header matching helper
         const getColVal = (possibleHeaders) => {
           for (const ph of possibleHeaders) {
             const targetKey = ph.toLowerCase();
@@ -329,7 +329,7 @@
       }
       return parsedShows;
     }
-
+    
     function badgeHtml(val, positiveValues = ['yes']) {
       const clean = (val || '').trim();
       if (!clean) return `<span class="text-xs text-slate-500">—</span>`;
