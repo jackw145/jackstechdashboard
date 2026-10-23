@@ -257,11 +257,10 @@ function parseLiveCsv(csvText) {
 
       for (let i = 0; i < lines.length; i++) {
         const cols = parseCsvLine(lines[i]);
-        const firstCell = (cols[0] || '').trim();
-        const secondCell = (cols[1] || '').trim();
+        const joinedRowStr = cols.join(' ').toLowerCase();
 
-        // 1. Locate header row and build precise header-to-index map
-        if (!headerFound && firstCell.toLowerCase().includes('artist') && cols.some(c => c.toLowerCase().includes('load in') || c.toLowerCase().includes('parking'))) {
+        // 1. Bulletproof Header Matcher: Finds any row containing both 'artist' and 'date'
+        if (!headerFound && joinedRowStr.includes('artist') && joinedRowStr.includes('date')) {
           colMap = {};
           cols.forEach((h, idx) => {
             const cleanH = h.replace(/\s+/g, ' ').trim().toLowerCase();
@@ -274,6 +273,8 @@ function parseLiveCsv(csvText) {
         if (!headerFound) continue;
 
         // 2. Detect month sections
+        const firstCell = (cols[0] || '').trim();
+        const secondCell = (cols[1] || '').trim();
         if (!firstCell && /^(January|February|March|April|May|June|July|August|September|October|November|December)$/i.test(secondCell)) {
           currentMonth = secondCell;
           continue;
@@ -283,9 +284,9 @@ function parseLiveCsv(csvText) {
           continue;
         }
 
-        // Safe getter that checks exact header title in colMap first, preventing out-of-bounds errors
-        const getVal = (headerTitle) => {
-          const target = headerTitle.toLowerCase();
+        // Safe column value lookup by header keyword
+        const getVal = (headerKeyword) => {
+          const target = headerKeyword.toLowerCase();
           for (const [hName, idx] of Object.entries(colMap)) {
             if (hName === target || hName.includes(target)) {
               if (cols[idx] !== undefined) {
@@ -296,7 +297,7 @@ function parseLiveCsv(csvText) {
           return '';
         };
 
-        const dateCol = getVal('date');
+        const dateCol = getVal('date') || cols[1] || '';
         const isoDate = parseUkDateToIso(dateCol, currentMonth);
         
         // Skip non-show rows
@@ -304,12 +305,9 @@ function parseLiveCsv(csvText) {
           continue;
         }
 
-        // Extract Parking and Parking Code using exact header lookups
-        const parkingVal = getVal('parking');
-        const parkingCodeVal = getVal('parking code');
-
-        // Debug log to browser console (Press F12 to inspect)
-        console.log(`Show: ${firstCell} | Parking: "${parkingVal}" | Code: "${parkingCodeVal}"`);
+        // Direct exact extraction for Parking and Parking Code
+        const parkingVal = getVal('parking') || cols[41] || cols[39] || '';
+        const parkingCodeVal = getVal('parking code') || getVal('code') || cols[42] || cols[40] || '';
 
         parsedShows.push({
           artist: firstCell,
@@ -331,7 +329,6 @@ function parseLiveCsv(csvText) {
           loadIn: getVal('load in'),
           doorsCurfew: getVal('doors'),
           stageTimes: getVal('stage times'),
-          crew: getColByKeywords ? undefined : getVal('crew'), // handled via getVal
           crew: getVal('crew'),
           runners: getVal('runners'),
           supports: getVal('supports'),
