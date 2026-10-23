@@ -171,18 +171,17 @@
       });
     }
 
-    async function syncLiveSheet() {
+ async function syncLiveSheet() {
       if (!csvSourceUrl) {
         openModal();
         return;
       }
       const badge = document.getElementById('syncBadge');
       try {
-        badge.innerHTML = `<span class="h-2 w-2 rounded-full bg-cyan-400 animate-ping"></span> FETCHING PUBLISHED CSV...`;
+        badge.innerHTML = `<span class="h-2 w-2 rounded-full bg-cyan-400 animate-ping"></span> CONNECTING TO GOOGLE SHEET...`;
         
-        // Routed via secure proxy to completely bypass browser CORS blocks
-        const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(csvSourceUrl);
-        const res = await fetch(proxyUrl, { cache: 'no-store' });
+        // Direct fetch to your Apps Script Web App URL
+        const res = await fetch(csvSourceUrl, { cache: 'no-store', mode: 'cors' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const csvText = await res.text();
         const parsed = parseLiveCsv(csvText);
@@ -196,11 +195,11 @@
           rebuildUniqueDates();
           jumpToToday();
         } else {
-          throw new Error("No valid show rows found in CSV");
+          throw new Error("No valid show rows found");
         }
       } catch (err) {
         badge.innerHTML = `<span class="h-2 w-2 rounded-full bg-rose-400"></span> CONNECTION ERROR`;
-        document.getElementById('lastSyncedFooter').textContent = `Error: ${err.message}. Check Published CSV link in ⚙ Sheet.`;
+        document.getElementById('lastSyncedFooter').textContent = `Error: ${err.message}. Make sure your Apps Script Web App is deployed as 'Anyone'.`;
       }
     }
 
