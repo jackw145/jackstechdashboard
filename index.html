@@ -244,60 +244,87 @@
       return '';
     }
 
-    function parseLiveCsv(csvText) {
+  function parseLiveCsv(csvText) {
       const lines = csvText.split(/\r?\n/).filter(l => l.trim().length > 0);
       const parsedShows = [];
       let currentMonth = 'January';
+      let colMap = {};
 
       for (let i = 0; i < lines.length; i++) {
         const cols = parseCsvLine(lines[i]);
-        const artist = (cols[0] || '').trim();
-        const dateCol = (cols[1] || '').trim();
+        const firstCell = (cols[0] || '').trim();
+        const secondCell = (cols[1] || '').trim();
 
-        if (!artist && /^(January|February|March|April|May|June|July|August|September|October|November|December)$/i.test(dateCol)) {
-          currentMonth = dateCol;
+        // Dynamically capture the header row containing column titles
+        if (firstCell.toLowerCase().includes('artist / show') || cols.some(c => c.toLowerCase().includes('load in'))) {
+          colMap = {};
+          cols.forEach((h, idx) => {
+            const cleanH = h.replace(/\s+/g, ' ').trim().toLowerCase();
+            if (cleanH) colMap[cleanH] = idx;
+          });
           continue;
         }
 
-        if (!artist || artist.toLowerCase().includes('artist / show') || dateCol.toLowerCase().includes('requires action')) {
+        // Detect month section headers
+        if (!firstCell && /^(January|February|March|April|May|June|July|August|September|October|November|December)$/i.test(secondCell)) {
+          currentMonth = secondCell;
           continue;
         }
 
+        if (!firstCell || secondCell.toLowerCase().includes('requires action') || firstCell.startsWith('[HIDDEN]')) {
+          continue;
+        }
+
+        // Helper to find data by checking multiple possible header variations
+        const getColVal = (possibleHeaders) => {
+          for (const ph of possibleHeaders) {
+            const targetKey = ph.toLowerCase();
+            for (const [headerName, colIdx] of Object.entries(colMap)) {
+              if (headerName.includes(targetKey) && cols[colIdx] !== undefined) {
+                const val = cols[colIdx].trim();
+                if (val) return val;
+              }
+            }
+          }
+          return '';
+        };
+
+        const dateCol = getColVal(['date']);
         const isoDate = parseUkDateToIso(dateCol, currentMonth);
         if (!isoDate) continue;
 
         parsedShows.push({
-          artist: artist,
+          artist: firstCell,
           dateStr: dateCol,
           isoDate,
           month: currentMonth,
-          promoter: cols[2] || '',
-          rep: cols[3] || '',
-          techManager: cols[4] || '',
-          tech1: cols[5] || '',
-          tech2: cols[6] || '',
-          tech3: cols[7] || '',
-          postShowSetup: cols[29] || '',
-          sentShowStop: cols[30] || '',
-          fireCert: cols[31] || '',
-          fohRiser: cols[32] || '',
-          accreditation: cols[33] || '',
-          access: cols[34] || '',
-          loadIn: cols[35] || '',
-          doorsCurfew: cols[36] || '',
-          stageTimes: cols[37] || '',
-          crew: cols[38] || '',
-          runners: cols[39] || '',
-          supports: cols[40] || '',
-          parking: cols[41] || '',
-          parkingCode: cols[42] || '',
-          hires: cols[43] || '',
-          lxPower: cols[44] || '',
-          lightingSfx: cols[45] || '',
-          audioPower: cols[46] || '',
-          audio: cols[47] || '',
-          risers: cols[48] || '',
-          notes: cols[51] || ''
+          promoter: getColVal(['promotor', 'promoter']),
+          rep: getColVal(['rep']),
+          techManager: getColVal(['tech manager']),
+          tech1: getColVal(['tech 1']),
+          tech2: getColVal(['tech 2']),
+          tech3: getColVal(['tech 3']),
+          postShowSetup: getColVal(['post show setup']),
+          sentShowStop: getColVal(['show stop']),
+          fireCert: getColVal(['fire cert']),
+          fohRiser: getColVal(['foh riser']),
+          accreditation: getColVal(['accreditation']),
+          access: getColVal(['access']),
+          loadIn: getColVal(['load in']),
+          doorsCurfew: getColVal(['doors', 'curfew']),
+          stageTimes: getColVal(['stage times']),
+          crew: getColVal(['crew']),
+          runners: getColVal(['runners', 'catering']),
+          supports: getColVal(['supports']),
+          parking: getColVal(['parking']),
+          parkingCode: getColVal(['parking code', 'code']),
+          hires: getColVal(['hires']),
+          lxPower: getColVal(['lx power']),
+          lightingSfx: getColVal(['lighting', 'sfx']),
+          audioPower: getColVal(['audio power']),
+          audio: getColVal(['audio']),
+          risers: getColVal(['risers']),
+          notes: getColVal(['notes'])
         });
       }
       return parsedShows;
