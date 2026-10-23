@@ -232,7 +232,7 @@
       return '';
     }
 
-    function parseLiveCsv(csvText) {
+function parseLiveCsv(csvText) {
       const lines = csvText.split(/\r?\n/).filter(l => l.trim().length > 0);
       const parsedShows = [];
       let currentMonth = 'January';
@@ -244,8 +244,8 @@
         const firstCell = (cols[0] || '').trim();
         const secondCell = (cols[1] || '').trim();
 
-        // 1. Locate header row and map column indexes dynamically from the sheet itself
-        if (!headerFound && (firstCell.toLowerCase().includes('artist') || cols.some(c => c.toLowerCase().includes('load in') || c.toLowerCase().includes('parking')))) {
+        // 1. Stricter header detection: Must be the actual 2026 schedule header row
+        if (!headerFound && firstCell.toLowerCase().includes('artist') && cols.some(c => c.toLowerCase().includes('load in') || c.toLowerCase().includes('parking'))) {
           colMap = {};
           cols.forEach((h, idx) => {
             const cleanH = h.replace(/\s+/g, ' ').trim().toLowerCase();
@@ -257,17 +257,17 @@
 
         if (!headerFound) continue;
 
-        // 2. Detect month sections
+        // 2. Detect month section headers
         if (!firstCell && /^(January|February|March|April|May|June|July|August|September|October|November|December)$/i.test(secondCell)) {
           currentMonth = secondCell;
           continue;
         }
 
+        // Skip empty rows, hidden rows, or non-show tables
         if (!firstCell || firstCell.toLowerCase().includes('requires action') || firstCell.startsWith('[HIDDEN]')) {
           continue;
         }
 
-        // Helper to safely grab columns from THIS EXACT ROW (cols) based on dynamic header map
         const getColByKeywords = (keywords) => {
           for (const kw of keywords) {
             const searchKw = kw.toLowerCase();
@@ -283,6 +283,59 @@
           return '';
         };
 
+        // 3. STRICT DATE VALIDATION: A valid show row MUST have a date in column 1 (Col B)
+        const dateCol = getColByKeywords(['date']) || cols[1] || '';
+        const isoDate = parseUkDateToIso(dateCol, currentMonth);
+        
+        // If column B doesn't look like a real date string (e.g. it's a maintenance note or budget line), skip it entirely!
+        if (!isoDate || !/\d/.test(dateCol)) {
+          continue;
+        }
+
+        // Pull Parking and Parking Code strictly from this row's mapped columns
+        let parkingVal = getColByKeywords(['parking']) || cols[41] || cols[39] || '';
+        let parkingCodeVal = getColByKeywords(['parking code', 'code']) || cols[42] || cols[40] || '';
+
+        if (parkingVal === parkingCodeVal && parkingVal.length > 10) {
+          parkingCodeVal = '';
+        }
+
+        parsedShows.push({
+          artist: firstCell,
+          dateStr: dateCol,
+          isoDate,
+          month: currentMonth,
+          promoter: getColByKeywords(['promotor', 'promoter']),
+          rep: getColByKeywords(['rep']),
+          techManager: getColByKeywords(['tech manager', 'tech staff', 'manager']),
+          tech1: getColByKeywords(['tech 1']),
+          tech2: getColByKeywords(['tech 2']),
+          tech3: getColByKeywords(['tech 3']),
+          postShowSetup: getColByKeywords(['post show setup', 'post show']),
+          sentShowStop: getColByKeywords(['sent show stop', 'show stop']),
+          fireCert: getColByKeywords(['fire cert received', 'fire cert']),
+          fohRiser: getColByKeywords(['foh riser']),
+          accreditation: getColByKeywords(['accreditation']),
+          access: getColByKeywords(['access']),
+          loadIn: getColByKeywords(['load in']),
+          doorsCurfew: getColByKeywords(['doors/curfew', 'doors']),
+          stageTimes: getColByKeywords(['stage times', 'stage time']),
+          crew: getColByKeywords(['crew']),
+          runners: getColByKeywords(['runners / catering', 'runners']),
+          supports: getColByKeywords(['supports']),
+          parking: parkingVal,
+          parkingCode: parkingCodeVal,
+          hires: getColByKeywords(['hires']),
+          lxPower: getColByKeywords(['lx power']),
+          lightingSfx: getColByKeywords(['lighting/sfx', 'lighting']),
+          audioPower: getColByKeywords(['audio power']),
+          audio: getColByKeywords(['audio']),
+          risers: getColByKeywords(['risers']),
+          notes: getColByKeywords(['notes'])
+        });
+      }
+      return parsedShows;
+    }
         const dateCol = getColByKeywords(['date']);
         const isoDate = parseUkDateToIso(dateCol, currentMonth);
         if (!isoDate) continue;
