@@ -248,7 +248,7 @@
       return '';
     }
 
-function parseLiveCsv(csvText) {
+    function parseLiveCsv(csvText) {
       const lines = csvText.split(/\r?\n/).filter(l => l.trim().length > 0);
       const parsedShows = [];
       let currentMonth = 'January';
@@ -257,6 +257,8 @@ function parseLiveCsv(csvText) {
 
       for (let i = 0; i < lines.length; i++) {
         const cols = parseCsvLine(lines[i]);
+        const firstCell = (cols[0] || '').trim();
+        const secondCell = (cols[1] || '').trim();
         const joinedRowStr = cols.join(' ').toLowerCase();
 
         // 1. Bulletproof Header Matcher: Finds any row containing both 'artist' and 'date'
@@ -273,8 +275,6 @@ function parseLiveCsv(csvText) {
         if (!headerFound) continue;
 
         // 2. Detect month sections
-        const firstCell = (cols[0] || '').trim();
-        const secondCell = (cols[1] || '').trim();
         if (!firstCell && /^(January|February|March|April|May|June|July|August|September|October|November|December)$/i.test(secondCell)) {
           currentMonth = secondCell;
           continue;
@@ -284,68 +284,72 @@ function parseLiveCsv(csvText) {
           continue;
         }
 
-        // Safe column value lookup by header keyword
-        const getVal = (headerKeyword) => {
+        // Helper to grab column values safely by exact title or keyword with hardcoded index fallback
+        const getVal = (headerKeyword, fallbackIdx) => {
           const target = headerKeyword.toLowerCase();
           for (const [hName, idx] of Object.entries(colMap)) {
             if (hName === target || hName.includes(target)) {
-              if (cols[idx] !== undefined) {
+              if (cols[idx] !== undefined && cols[idx].trim() !== '') {
                 return cols[idx].trim();
               }
             }
           }
+          // Direct fallback index if header search misses
+          if (fallbackIdx !== undefined && cols[fallbackIdx] !== undefined) {
+            return cols[fallbackIdx].trim();
+          }
           return '';
         };
 
-        const dateCol = getVal('date') || cols[1] || '';
+        const dateCol = getVal('date', 1);
         const isoDate = parseUkDateToIso(dateCol, currentMonth);
         
-        // Skip non-show rows
+        // Ensure row is a valid show row with a real date
         if (!isoDate || !/\d/.test(dateCol)) {
           continue;
         }
 
-        // Direct exact extraction for Parking and Parking Code
-        const parkingVal = getVal('parking') || cols[41] || cols[39] || '';
-        const parkingCodeVal = getVal('parking code') || getVal('code') || cols[42] || cols[40] || '';
+        // Strict row-aligned extraction for Parking (Col AP = 41) and Parking Code (Col AQ = 42)
+        const parkingVal = getVal('parking', 41);
+        const parkingCodeVal = getVal('parking code', 42) || getVal('code', 42);
 
         parsedShows.push({
           artist: firstCell,
           dateStr: dateCol,
           isoDate,
           month: currentMonth,
-          promoter: getVal('promotor') || getVal('promoter'),
-          rep: getVal('rep'),
-          techManager: getVal('tech manager') || getVal('tech staff'),
-          tech1: getVal('tech 1'),
-          tech2: getVal('tech 2'),
-          tech3: getVal('tech 3'),
-          postShowSetup: getVal('post show setup'),
-          sentShowStop: getVal('sent show stop'),
-          fireCert: getVal('fire cert'),
-          fohRiser: getVal('foh riser'),
-          accreditation: getVal('accreditation'),
-          access: getVal('access'),
-          loadIn: getVal('load in'),
-          doorsCurfew: getVal('doors'),
-          stageTimes: getVal('stage times'),
-          crew: getVal('crew'),
-          runners: getVal('runners'),
-          supports: getVal('supports'),
+          promoter: getVal('promotor', 2) || getVal('promoter', 2),
+          rep: getVal('rep', 3),
+          techManager: getVal('tech manager', 4) || getVal('tech staff', 4),
+          tech1: getVal('tech 1', 5),
+          tech2: getVal('tech 2', 6),
+          tech3: getVal('tech 3', 7),
+          postShowSetup: getVal('post show setup', 29),
+          sentShowStop: getVal('sent show stop', 30),
+          fireCert: getVal('fire cert', 31),
+          fohRiser: getVal('foh riser', 32),
+          accreditation: getVal('accreditation', 33),
+          access: getVal('access', 34),
+          loadIn: getVal('load in', 35),
+          doorsCurfew: getVal('doors', 36),
+          stageTimes: getVal('stage times', 37),
+          crew: getVal('crew', 38),
+          runners: getVal('runners', 39),
+          supports: getVal('supports', 40),
           parking: parkingVal || '—',
           parkingCode: parkingCodeVal || '—',
-          hires: getVal('hires'),
-          lxPower: getVal('lx power'),
-          lightingSfx: getVal('lighting'),
-          audioPower: getVal('audio power'),
-          audio: getVal('audio'),
-          risers: getVal('risers'),
-          notes: getVal('notes')
+          hires: getVal('hires', 43),
+          lxPower: getVal('lx power', 44),
+          lightingSfx: getVal('lighting', 45),
+          audioPower: getVal('audio power', 46),
+          audio: getVal('audio', 47),
+          risers: getVal('risers', 48),
+          notes: getVal('notes', 51)
         });
       }
       return parsedShows;
     }
-    
+
     function badgeHtml(val, positiveValues = ['yes']) {
       const clean = (val || '').trim();
       if (!clean) return `<span class="text-xs text-slate-500">—</span>`;
