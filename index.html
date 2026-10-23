@@ -248,7 +248,7 @@
       return '';
     }
 
-    function parseLiveCsv(csvText) {
+function parseLiveCsv(csvText) {
       const lines = csvText.split(/\r?\n/).filter(l => l.trim().length > 0);
       const parsedShows = [];
       let currentMonth = 'January';
@@ -260,8 +260,8 @@
         const firstCell = (cols[0] || '').trim();
         const secondCell = (cols[1] || '').trim();
 
-        // 1. Locate header row and map column indexes dynamically from the sheet itself
-        if (!headerFound && (firstCell.toLowerCase().includes('artist') || cols.some(c => c.toLowerCase().includes('load in') || c.toLowerCase().includes('parking')))) {
+        // 1. Locate header row and build precise header-to-index map
+        if (!headerFound && firstCell.toLowerCase().includes('artist') && cols.some(c => c.toLowerCase().includes('load in') || c.toLowerCase().includes('parking'))) {
           colMap = {};
           cols.forEach((h, idx) => {
             const cleanH = h.replace(/\s+/g, ' ').trim().toLowerCase();
@@ -283,75 +283,72 @@
           continue;
         }
 
-        // Helper to safely grab columns from THIS EXACT ROW (cols) based on dynamic header map
-        const getColByKeywords = (keywords) => {
-          for (const kw of keywords) {
-            const searchKw = kw.toLowerCase();
-            for (const [headerName, colIdx] of Object.entries(colMap)) {
-              if (headerName === searchKw || headerName.includes(searchKw)) {
-                if (cols[colIdx] !== undefined) {
-                  const val = cols[colIdx].trim();
-                  if (val) return val;
-                }
+        // Safe getter that checks exact header title in colMap first, preventing out-of-bounds errors
+        const getVal = (headerTitle) => {
+          const target = headerTitle.toLowerCase();
+          for (const [hName, idx] of Object.entries(colMap)) {
+            if (hName === target || hName.includes(target)) {
+              if (cols[idx] !== undefined) {
+                return cols[idx].trim();
               }
             }
           }
           return '';
         };
 
-        const dateCol = getColByKeywords(['date']);
+        const dateCol = getVal('date');
         const isoDate = parseUkDateToIso(dateCol, currentMonth);
         
-        // Ensure row is a valid show row
+        // Skip non-show rows
         if (!isoDate || !/\d/.test(dateCol)) {
           continue;
         }
 
-        // Pull Parking and Parking Code strictly from THIS row's mapped columns with safety fallbacks
-        let parkingVal = getColByKeywords(['parking']) || cols[41] || cols[39] || '';
-        let parkingCodeVal = getColByKeywords(['parking code', 'code']) || cols[42] || cols[40] || '';
+        // Extract Parking and Parking Code using exact header lookups
+        const parkingVal = getVal('parking');
+        const parkingCodeVal = getVal('parking code');
 
-        if (parkingVal === parkingCodeVal && parkingVal.length > 10) {
-          parkingCodeVal = '';
-        }
+        // Debug log to browser console (Press F12 to inspect)
+        console.log(`Show: ${firstCell} | Parking: "${parkingVal}" | Code: "${parkingCodeVal}"`);
 
         parsedShows.push({
           artist: firstCell,
           dateStr: dateCol,
           isoDate,
           month: currentMonth,
-          promoter: getColByKeywords(['promotor', 'promoter']),
-          rep: getColByKeywords(['rep']),
-          techManager: getColByKeywords(['tech manager', 'tech staff', 'manager']),
-          tech1: getColByKeywords(['tech 1']),
-          tech2: getColByKeywords(['tech 2']),
-          tech3: getColByKeywords(['tech 3']),
-          postShowSetup: getColByKeywords(['post show setup', 'post show']),
-          sentShowStop: getColByKeywords(['sent show stop', 'show stop']),
-          fireCert: getColByKeywords(['fire cert received', 'fire cert']),
-          fohRiser: getColByKeywords(['foh riser']),
-          accreditation: getColByKeywords(['accreditation']),
-          access: getColByKeywords(['access']),
-          loadIn: getColByKeywords(['load in']),
-          doorsCurfew: getColByKeywords(['doors/curfew', 'doors']),
-          stageTimes: getColByKeywords(['stage times', 'stage time']),
-          crew: getColByKeywords(['crew']),
-          runners: getColByKeywords(['runners / catering', 'runners']),
-          supports: getColByKeywords(['supports']),
-          parking: parkingVal,
-          parkingCode: parkingCodeVal,
-          hires: getColByKeywords(['hires']),
-          lxPower: getColByKeywords(['lx power']),
-          lightingSfx: getColByKeywords(['lighting/sfx', 'lighting']),
-          audioPower: getColByKeywords(['audio power']),
-          audio: getColByKeywords(['audio']),
-          risers: getColByKeywords(['risers']),
-          notes: getColByKeywords(['notes'])
+          promoter: getVal('promotor') || getVal('promoter'),
+          rep: getVal('rep'),
+          techManager: getVal('tech manager') || getVal('tech staff'),
+          tech1: getVal('tech 1'),
+          tech2: getVal('tech 2'),
+          tech3: getVal('tech 3'),
+          postShowSetup: getVal('post show setup'),
+          sentShowStop: getVal('sent show stop'),
+          fireCert: getVal('fire cert'),
+          fohRiser: getVal('foh riser'),
+          accreditation: getVal('accreditation'),
+          access: getVal('access'),
+          loadIn: getVal('load in'),
+          doorsCurfew: getVal('doors'),
+          stageTimes: getVal('stage times'),
+          crew: getColByKeywords ? undefined : getVal('crew'), // handled via getVal
+          crew: getVal('crew'),
+          runners: getVal('runners'),
+          supports: getVal('supports'),
+          parking: parkingVal || '—',
+          parkingCode: parkingCodeVal || '—',
+          hires: getVal('hires'),
+          lxPower: getVal('lx power'),
+          lightingSfx: getVal('lighting'),
+          audioPower: getVal('audio power'),
+          audio: getVal('audio'),
+          risers: getVal('risers'),
+          notes: getVal('notes')
         });
       }
       return parsedShows;
     }
-
+    
     function badgeHtml(val, positiveValues = ['yes']) {
       const clean = (val || '').trim();
       if (!clean) return `<span class="text-xs text-slate-500">—</span>`;
