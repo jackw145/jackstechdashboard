@@ -3,112 +3,271 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Live Show Dashboard</title>
+<title>Live Tech Dashboard</title>
 <style>
   :root {
-    --bg: #0f172a;
-    --card: #1e293b;
-    --text: #f8fafc;
-    --muted: #94a3b8;
-    --accent: #3b82f6;
+    --bg-main: #0a0b10;
+    --bg-panel: #12141d;
+    --bg-panel-header: #1a1d27;
+    --text-main: #ffffff;
+    --text-muted: #8b949e;
+    --accent-blue: #3b82f6;
+    --accent-purple: #8b5cf6;
+    --border-color: #2d3748;
   }
   body {
     margin: 0;
-    background-color: var(--bg);
-    color: var(--text);
-    font-family: system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     height: 100vh;
     width: 100vw;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
   }
-  #header {
+  /* Top Navigation Bar */
+  #top-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 2vh 3vw;
-    height: 10vh;
-    background: rgba(0,0,0,0.3);
+    padding: 15px 20px;
+    background-color: #11141e;
+    border-bottom: 1px solid var(--border-color);
+    height: 60px;
   }
-  button {
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 2vh 3vw;
-    font-size: 2.5vh;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-  }
-  button:disabled { background: #334155; opacity: 0.5; cursor: not-allowed; }
-  #date-display {
-    font-size: 4vh;
+  .nav-title {
+    font-size: 18px;
     font-weight: 800;
     letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
-  #content {
+  .nav-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  button {
+    background: #1f2937;
+    color: white;
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    transition: background 0.2s;
+  }
+  button:hover:not(:disabled) { background: #374151; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .active-btn { background: var(--accent-blue); border-color: var(--accent-blue); }
+  
+  /* Double Show Banner */
+  #double-show-banner {
+    display: none;
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    margin: 15px 20px 0;
+    padding: 10px 15px;
+    border-radius: 8px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .banner-text {
+    color: var(--accent-purple);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+  .show-selector {
+    display: flex;
+    gap: 10px;
+  }
+
+  /* Main Content Area */
+  #main-content {
     flex: 1;
-    display: grid;
-    gap: 2vw;
-    padding: 2vw;
-    height: 86vh;
-    box-sizing: border-box;
-  }
-  .show-card {
-    background-color: var(--card);
-    border-radius: 16px;
-    padding: 3vh 3vw;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    gap: 20px;
+    overflow: hidden;
   }
-  .show-title {
-    font-size: clamp(3vh, 5vh, 7vh);
+  #show-title-display {
+    font-size: 42px;
     font-weight: 900;
-    color: var(--accent);
-    text-align: center;
-    margin: 0 0 3vh 0;
-    text-transform: uppercase;
+    margin: 0;
+    padding: 0 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .detail-grid {
+
+  /* 6-Panel Grid */
+  .dashboard-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2vh 2vw;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 20px;
+    flex: 1;
+    min-height: 0;
   }
-  .detail-item {
-    background: rgba(255,255,255,0.03);
-    padding: 2vh;
+  .panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    overflow: hidden;
   }
-  .detail-label {
-    font-size: clamp(1.5vh, 2vh, 2.5vh);
-    color: var(--muted);
+  .panel-header {
+    background: var(--bg-panel-header);
+    padding: 10px 15px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent-blue);
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-bottom: 0.5vh;
+    border-bottom: 1px solid var(--border-color);
   }
-  .detail-value {
-    font-size: clamp(2vh, 3vh, 4vh);
-    font-weight: 700;
+  .panel-content {
+    padding: 15px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow-y: auto;
+  }
+
+  /* Inside Panels */
+  .data-group {
+    background: #0d0f16;
+    border: 1px solid #1f2937;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .data-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .data-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-main);
     word-wrap: break-word;
   }
-  .full-width { grid-column: 1 / -1; }
+  .empty-val {
+    color: #4b5563;
+  }
+  
+  /* Flex Layouts for specific panels */
+  .flex-row { display: flex; gap: 15px; }
+  .flex-row > .data-group { flex: 1; }
 </style>
 </head>
 <body>
 
-<div id="header">
-  <button id="prev-btn" onclick="changeDate(-1)">&#8592; Previous Day</button>
-  <div id="date-display">Loading Data...</div>
-  <button id="next-btn" onclick="changeDate(1)">Next Day &#8594;</button>
+<div id="top-nav">
+  <div class="nav-title">
+    <span style="background: var(--accent-blue); padding: 4px 8px; border-radius: 4px; color: white;">TECH DASHBOARD</span>
+    <span id="loaded-status" style="font-size: 12px; color: var(--text-muted); font-weight: normal;">Loading data...</span>
+  </div>
+  <div class="nav-controls">
+    <button onclick="changeDate(-1)">&#8592; Prev</button>
+    <button class="active-btn" id="date-display">Date</button>
+    <button onclick="changeDate(1)">Next &#8594;</button>
+  </div>
 </div>
 
-<div id="content"></div>
+<div id="double-show-banner">
+  <div class="banner-text">DOUBLE SHOW DAY &mdash; Multiple events on this date:</div>
+  <div class="show-selector" id="show-selector-buttons"></div>
+</div>
+
+<div id="main-content">
+  <h1 id="show-title-display">Loading Show...</h1>
+  
+  <div class="dashboard-grid">
+    <!-- Panel 1: Staff -->
+    <div class="panel">
+      <div class="panel-header">1 &bull; Staff on the Day</div>
+      <div class="panel-content">
+        <div class="data-group" style="flex:1;">
+          <div class="data-label">Staff Allocation</div>
+          <div class="data-value" id="val-staff">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 2: Access & Times (Placeholder for now, using standard layout) -->
+    <div class="panel">
+      <div class="panel-header">2 &bull; Access & Load-In</div>
+      <div class="panel-content">
+         <div class="data-group">
+          <div class="data-label">Schedule Notes</div>
+          <div class="data-value empty-val">No schedule data columns found</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 3: Notes -->
+    <div class="panel">
+      <div class="panel-header">3 &bull; Parking & Extra Notes</div>
+      <div class="panel-content">
+        <div class="data-group">
+          <div class="data-label">Notes</div>
+          <div class="data-value empty-val">No extra notes columns found</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 4: Risers -->
+    <div class="panel">
+      <div class="panel-header">4 &bull; Risers Required</div>
+      <div class="panel-content">
+        <div class="data-group" style="flex:1;">
+          <div class="data-label">Stage / Drum Risers</div>
+          <div class="data-value" id="val-risers">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 5: Audio & LX -->
+    <div class="panel">
+      <div class="panel-header">5 &bull; Audio & LX Requirements</div>
+      <div class="panel-content flex-row">
+        <div class="data-group">
+          <div class="data-label">Audio</div>
+          <div class="data-value" id="val-audio">-</div>
+        </div>
+        <div class="data-group">
+          <div class="data-label">Lighting / SFX</div>
+          <div class="data-value" id="val-lx">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 6: Post Show -->
+    <div class="panel">
+      <div class="panel-header">6 &bull; Post-Show Setup Instructions</div>
+      <div class="panel-content">
+        <div class="data-group" style="flex:1;">
+          <div class="data-label">End of Night / Turnaround State</div>
+          <div class="data-value" id="val-post">-</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
   const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgVZRHRjrtZCMkzzd8bIlSqVE81Yori6toV_peAXIrn1gzuJXJvRhv8kixtnPrNyJac73k5SBwys7N/pub?gid=0&single=true&output=csv';
@@ -116,6 +275,10 @@
   let showsByDate = {};
   let dates = [];
   let currentDateIndex = 0;
+  let activeShowIndexOnDate = 0; // For double show days
+
+  // Header mapping keys
+  let hMap = { title: -1, date: -1, staff: -1, lx: -1, audio: -1, risers: -1, post: -1 };
 
   function parseCSV(text) {
     let lines = [];
@@ -141,6 +304,19 @@
     return lines;
   }
 
+  function mapHeaders(headerRow) {
+    const lowerHeaders = headerRow.map(h => h.toLowerCase());
+    lowerHeaders.forEach((h, index) => {
+      if (h.includes('show') && !h.includes('post')) hMap.title = index;
+      if (h.includes('date')) hMap.date = index;
+      if (h.includes('staff')) hMap.staff = index;
+      if (h.includes('lx') || h.includes('light')) hMap.lx = index;
+      if (h.includes('audio') || h.includes('sound')) hMap.audio = index;
+      if (h.includes('riser')) hMap.risers = index;
+      if (h.includes('post')) hMap.post = index;
+    });
+  }
+
   async function fetchData() {
     try {
       const response = await fetch(CSV_URL);
@@ -148,24 +324,40 @@
       const rows = parseCSV(data);
       if (rows.length < 2) return;
 
-      const headers = rows[0].map(h => h.toLowerCase().trim());
+      mapHeaders(rows[0]);
       showsByDate = {};
+      let loadedCount = 0;
       
       for (let i = 1; i < rows.length; i++) {
-        if (rows[i].length !== headers.length || !rows[i].join('').trim()) continue;
-        let show = {};
-        headers.forEach((header, index) => { show[header] = rows[i][index] || '-'; });
+        if (rows[i].length < 2 || !rows[i].join('').trim()) continue; // Skip empty rows
         
-        const dateKey = show['date'] || 'No Date Listed';
+        const r = rows[i];
+        const dateKey = hMap.date > -1 && r[hMap.date] ? r[hMap.date] : 'Unscheduled';
+        
+        let show = {
+          title: hMap.title > -1 ? r[hMap.title] : 'Unnamed Show',
+          staff: hMap.staff > -1 ? r[hMap.staff] : '',
+          lx: hMap.lx > -1 ? r[hMap.lx] : '',
+          audio: hMap.audio > -1 ? r[hMap.audio] : '',
+          risers: hMap.risers > -1 ? r[hMap.risers] : '',
+          post: hMap.post > -1 ? r[hMap.post] : ''
+        };
+
         if (!showsByDate[dateKey]) showsByDate[dateKey] = [];
         showsByDate[dateKey].push(show);
+        loadedCount++;
       }
 
       dates = Object.keys(showsByDate);
-      if (dates.length > 0) renderCurrentDate();
-      else document.getElementById('date-display').innerText = 'Sheet is empty';
+      document.getElementById('loaded-status').innerText = `Loaded (${loadedCount} Shows)`;
+      
+      if (dates.length > 0) {
+        renderCurrentDate();
+      } else {
+        document.getElementById('show-title-display').innerText = 'Sheet is empty';
+      }
     } catch (error) {
-      document.getElementById('date-display').innerText = 'Connection Error';
+      document.getElementById('show-title-display').innerText = 'Connection Error';
     }
   }
 
@@ -173,66 +365,57 @@
     currentDateIndex += direction;
     if (currentDateIndex < 0) currentDateIndex = 0;
     if (currentDateIndex >= dates.length) currentDateIndex = dates.length - 1;
+    activeShowIndexOnDate = 0; // Reset sub-selection
     renderCurrentDate();
+  }
+
+  function selectSubShow(index) {
+    activeShowIndexOnDate = index;
+    renderCurrentDate();
+  }
+
+  function formatVal(val) {
+    return (val && val.trim() !== '' && val !== '-') ? val : '<span class="empty-val">—</span>';
   }
 
   function renderCurrentDate() {
     if (dates.length === 0) return;
     const currentDate = dates[currentDateIndex];
     document.getElementById('date-display').innerText = currentDate;
-    
-    document.getElementById('prev-btn').disabled = (currentDateIndex === 0);
-    document.getElementById('next-btn').disabled = (currentDateIndex === dates.length - 1);
 
     const shows = showsByDate[currentDate];
-    const content = document.getElementById('content');
+    const banner = document.getElementById('double-show-banner');
+    const selectorContainer = document.getElementById('show-selector-buttons');
     
-    // Automatically divide screen space based on number of shows that day
-    content.style.gridTemplateColumns = `repeat(${Math.min(shows.length, 3)}, 1fr)`;
-    content.innerHTML = '';
+    // Handle Double Show Days
+    if (shows.length > 1) {
+      banner.style.display = 'flex';
+      selectorContainer.innerHTML = '';
+      shows.forEach((s, idx) => {
+        const btn = document.createElement('button');
+        btn.innerText = `Show ${idx + 1}: ${s.title.substring(0, 15)}...`;
+        if (idx === activeShowIndexOnDate) btn.className = 'active-btn';
+        btn.onclick = () => selectSubShow(idx);
+        selectorContainer.appendChild(btn);
+      });
+    } else {
+      banner.style.display = 'none';
+      activeShowIndexOnDate = 0;
+    }
 
-    shows.forEach(show => {
-      // Mapping the requested headers dynamically
-      const title = show['show name'] || show['show'] || 'Unnamed Show';
-      const staff = show['staff'] || '-';
-      const lx = show['lx'] || '-';
-      const audio = show['audio'] || '-';
-      const risers = show['risers'] || '-';
-      const postShow = show['post show setup'] || show['post show'] || '-';
+    const activeShow = shows[activeShowIndexOnDate];
 
-      const card = document.createElement('div');
-      card.className = 'show-card';
-      card.innerHTML = `
-        <h2 class="show-title">${title}</h2>
-        <div class="detail-grid">
-          <div class="detail-item full-width">
-            <div class="detail-label">Staff</div>
-            <div class="detail-value">${staff}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">LX</div>
-            <div class="detail-value">${lx}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Audio</div>
-            <div class="detail-value">${audio}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Risers</div>
-            <div class="detail-value">${risers}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Post Show Setup</div>
-            <div class="detail-value">${postShow}</div>
-          </div>
-        </div>
-      `;
-      content.appendChild(card);
-    });
+    // Populate Data
+    document.getElementById('show-title-display').innerText = activeShow.title;
+    document.getElementById('val-staff').innerHTML = formatVal(activeShow.staff);
+    document.getElementById('val-risers').innerHTML = formatVal(activeShow.risers);
+    document.getElementById('val-audio').innerHTML = formatVal(activeShow.audio);
+    document.getElementById('val-lx').innerHTML = formatVal(activeShow.lx);
+    document.getElementById('val-post').innerHTML = formatVal(activeShow.post);
   }
 
   fetchData();
-  setInterval(fetchData, 300000); // Live sync every 5 mins without refreshing page
+  setInterval(fetchData, 300000); // 5 min auto-refresh
 </script>
 </body>
 </html>
