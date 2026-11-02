@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Show Dashboard</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --accent: #3b82f6;
+  }
+  body {
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, sans-serif;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  #header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2vh 3vw;
+    height: 10vh;
+    background: rgba(0,0,0,0.3);
+  }
+  button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 2vh 3vw;
+    font-size: 2.5vh;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  button:disabled { background: #334155; opacity: 0.5; cursor: not-allowed; }
+  #date-display {
+    font-size: 4vh;
+    font-weight: 800;
+    letter-spacing: 1px;
+  }
+  #content {
+    flex: 1;
+    display: grid;
+    gap: 2vw;
+    padding: 2vw;
+    height: 86vh;
+    box-sizing: border-box;
+  }
+  .show-card {
+    background-color: var(--card);
+    border-radius: 16px;
+    padding: 3vh 3vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  }
+  .show-title {
+    font-size: clamp(3vh, 5vh, 7vh);
+    font-weight: 900;
+    color: var(--accent);
+    text-align: center;
+    margin: 0 0 3vh 0;
+    text-transform: uppercase;
+  }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2vh 2vw;
+  }
+  .detail-item {
+    background: rgba(255,255,255,0.03);
+    padding: 2vh;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .detail-label {
+    font-size: clamp(1.5vh, 2vh, 2.5vh);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5vh;
+  }
+  .detail-value {
+    font-size: clamp(2vh, 3vh, 4vh);
+    font-weight: 700;
+    word-wrap: break-word;
+  }
+  .full-width { grid-column: 1 / -1; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <button id="prev-btn" onclick="changeDate(-1)">&#8592; Previous Day</button>
+  <div id="date-display">Loading Data...</div>
+  <button id="next-btn" onclick="changeDate(1)">Next Day &#8594;</button>
+</div>
+
+<div id="content"></div>
+
+<script>
+  const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgVZRHRjrtZCMkzzd8bIlSqVE81Yori6toV_peAXIrn1gzuJXJvRhv8kixtnPrNyJac73k5SBwys7N/pub?gid=0&single=true&output=csv';
+  
+  let showsByDate = {};
+  let dates = [];
+  let currentDateIndex = 0;
+
+  function parseCSV(text) {
+    let lines = [];
+    let currentLine = [];
+    let currentCell = '';
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i], nc = text[i+1];
+      if (c === '"' && inQuotes && nc === '"') { currentCell += '"'; i++; }
+      else if (c === '"') { inQuotes = !inQuotes; }
+      else if (c === ',' && !inQuotes) { currentLine.push(currentCell.trim()); currentCell = ''; }
+      else if ((c === '\n' || (c === '\r' && nc === '\n')) && !inQuotes) {
+        currentLine.push(currentCell.trim());
+        lines.push(currentLine);
+        currentLine = []; currentCell = '';
+        if (c === '\r') i++;
+      } else { currentCell += c; }
+    }
+    if (currentCell || currentLine.length > 0) {
+      currentLine.push(currentCell.trim());
+      lines.push(currentLine);
+    }
+    return lines;
+  }
+
+  async function fetchData() {
+    try {
+      const response = await fetch(CSV_URL);
+      const data = await response.text();
+      const rows = parseCSV(data);
+      if (rows.length < 2) return;
+
+      const headers = rows[0].map(h => h.toLowerCase().trim());
+      showsByDate = {};
+      
+      for (let i = 1; i < rows.length; i++) {
+        if (rows[i].length !== headers.length || !rows[i].join('').trim()) continue;
+        let show = {};
+        headers.forEach((header, index) => { show[header] = rows[i][index] || '-'; });
+        
+        const dateKey = show['date'] || 'No Date Listed';
+        if (!showsByDate[dateKey]) showsByDate[dateKey] = [];
+        showsByDate[dateKey].push(show);
+      }
+
+      dates = Object.keys(showsByDate);
+      if (dates.length > 0) renderCurrentDate();
+      else document.getElementById('date-display').innerText = 'Sheet is empty';
+    } catch (error) {
+      document.getElementById('date-display').innerText = 'Connection Error';
+    }
+  }
+
+  function changeDate(direction) {
+    currentDateIndex += direction;
+    if (currentDateIndex < 0) currentDateIndex = 0;
+    if (currentDateIndex >= dates.length) currentDateIndex = dates.length - 1;
+    renderCurrentDate();
+  }
+
+  function renderCurrentDate() {
+    if (dates.length === 0) return;
+    const currentDate = dates[currentDateIndex];
+    document.getElementById('date-display').innerText = currentDate;
+    
+    document.getElementById('prev-btn').disabled = (currentDateIndex === 0);
+    document.getElementById('next-btn').disabled = (currentDateIndex === dates.length - 1);
+
+    const shows = showsByDate[currentDate];
+    const content = document.getElementById('content');
+    
+    // Automatically divide screen space based on number of shows that day
+    content.style.gridTemplateColumns = `repeat(${Math.min(shows.length, 3)}, 1fr)`;
+    content.innerHTML = '';
+
+    shows.forEach(show => {
+      // Mapping the requested headers dynamically
+      const title = show['show name'] || show['show'] || 'Unnamed Show';
+      const staff = show['staff'] || '-';
+      const lx = show['lx'] || '-';
+      const audio = show['audio'] || '-';
+      const risers = show['risers'] || '-';
+      const postShow = show['post show setup'] || show['post show'] || '-';
+
+      const card = document.createElement('div');
+      card.className = 'show-card';
+      card.innerHTML = `
+        <h2 class="show-title">${title}</h2>
+        <div class="detail-grid">
+          <div class="detail-item full-width">
+            <div class="detail-label">Staff</div>
+            <div class="detail-value">${staff}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">LX</div>
+            <div class="detail-value">${lx}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Audio</div>
+            <div class="detail-value">${audio}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Risers</div>
+            <div class="detail-value">${risers}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Post Show Setup</div>
+            <div class="detail-value">${postShow}</div>
+          </div>
+        </div>
+      `;
+      content.appendChild(card);
+    });
+  }
+
+  fetchData();
+  setInterval(fetchData, 300000); // Live sync every 5 mins without refreshing page
+</script>
+</body>
+</html>
