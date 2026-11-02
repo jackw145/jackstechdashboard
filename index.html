@@ -223,11 +223,12 @@
     letter-spacing: 1px;
   }
   
+  /* UPDATED 4-COLUMN STRICT GRID */
   .panel-grid-layout {
     padding: 10px;
     flex: 1;
     display: grid;
-    grid-template-columns: 1fr 1fr; 
+    grid-template-columns: repeat(4, 1fr); 
     align-content: flex-start;
     gap: 8px; 
     overflow: hidden; 
@@ -273,8 +274,10 @@
   }
   .tint-purple .data-label { color: #a78bfa !important; }
   
-  .span-1 { grid-column: span 1; }
-  .span-2 { grid-column: span 2; }
+  /* Dynamic Grid Spans */
+  .span-1 { grid-column: span 1; } /* 25% width */
+  .span-2 { grid-column: span 2; } /* 50% width */
+  .span-4 { grid-column: span 4; } /* 100% width */
   .staff-item { flex: 1; } 
 
   .data-label {
@@ -411,8 +414,8 @@
     .panel-grid-layout {
       grid-template-columns: 1fr; 
     }
-    .span-1, .span-2 {
-      grid-column: span 1; 
+    .span-1, .span-2, .span-4 {
+      grid-column: span 1 !important; 
     }
   }
 </style>
@@ -431,7 +434,6 @@
   </div>
 
   <div class="nav-controls">
-    <!-- View Switchers -->
     <button id="btn-view-day" class="active-btn" onclick="switchView('day')">1 &bull; Day</button>
     <button id="btn-view-3shows" onclick="switchView('3shows')">3 &bull; Shows</button>
     <button id="btn-view-month" onclick="switchView('month')">1 &bull; Month</button>
@@ -514,11 +516,10 @@
   let activeShowIndexOnDate = 0;
   let currentView = 'day'; 
   
-  // Auto-Rotate Variables
   let autoRotateTimer = null;
   let isAutoRotating = false;
   const viewSequence = ['day', '3shows', 'month'];
-  const ROTATE_INTERVAL_MS = 120000; // 2 minutes
+  const ROTATE_INTERVAL_MS = 120000; 
   
   let headers = [];
   let dateIndex = -1;
@@ -529,7 +530,9 @@
     const lower = h.toLowerCase();
     if (lower.includes('access') && lower.includes('tech')) return false; 
     if (lower.includes('access')) return true; 
-    const metaKw = ['promot', 'rep', 'door', 'load', 'fire cert', 'show stop', 'foh riser', 'accreditation'];
+    
+    // Removed the 4 metadata fields so they drop naturally into the main panel
+    const metaKw = ['promot', 'rep', 'door', 'load'];
     return metaKw.some(kw => lower.includes(kw));
   }
 
@@ -668,7 +671,6 @@
     currentDateIndex = closestIndex;
   }
 
-  // --- AUTO ROTATE LOGIC ---
   function toggleAutoRotate() {
     isAutoRotating = !isAutoRotating;
     const btn = document.getElementById('btn-auto-rotate');
@@ -711,7 +713,6 @@
       startAutoRotateTimer();
     }
   }
-  // --------------------------
 
   function jumpToToday() {
     findClosestFutureDateIndex();
@@ -863,7 +864,7 @@
           <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div class="data-group tint-green"><div class="data-label">Promotor</div><div class="data-value">${promotor}</div></div>
             <div class="data-group tint-green"><div class="data-label">Access</div><div class="data-value">${access}</div></div>
-            <div class="data-group span-2 tint-green"><div class="data-label">Load In</div><div class="data-value">${loadIn}</div></div>
+            <div class="data-group span-2 tint-green" style="grid-column: span 2;"><div class="data-label">Load In</div><div class="data-value">${loadIn}</div></div>
           </div>
           
           <div class="data-group tint-blue" style="justify-content: flex-start; padding: 12px 14px;">
@@ -930,20 +931,25 @@
     const container = document.getElementById(panelId);
     container.innerHTML = '';
     if (groupKeys.length === 0) {
-      container.innerHTML = `<div class="data-group span-2"><div class="data-value empty-val">No data available</div></div>`;
+      container.innerHTML = `<div class="data-group span-4"><div class="data-value empty-val">No data available</div></div>`;
       return;
     }
 
+    // STRICT CUSTOM SORTING
     function getSortRank(h) {
       const lower = h.toLowerCase().trim();
       if (panelId === 'panel-parking') {
         if (lower === 'parking' || (lower.includes('parking') && !lower.includes('code'))) return 1;
         if (lower.includes('parking code')) return 2;
-        if (lower.includes('stage time')) return 3;
-        if (lower.includes('stage towel')) return 4;
-        if (lower.includes('bath towel')) return 5;
-        if (lower.includes('note')) return 6;
-        if (lower.includes('hire')) return 7;
+        if (lower.includes('show stop')) return 3.1;
+        if (lower.includes('fire cert')) return 3.2;
+        if (lower.includes('foh riser')) return 3.3;
+        if (lower.includes('accreditation')) return 3.4;
+        if (lower.includes('stage time')) return 4;
+        if (lower.includes('stage towel')) return 5;
+        if (lower.includes('bath towel')) return 6;
+        if (lower.includes('note')) return 7;
+        if (lower.includes('hire')) return 8;
       } 
       else if (panelId === 'panel-audiolx') {
         if (lower === 'audio' || (lower.includes('audio') && !lower.includes('power'))) return 1;
@@ -957,6 +963,8 @@
     }
 
     groupKeys.sort((a, b) => getSortRank(a) - getSortRank(b));
+    
+    const quarterWidthMatches = ['show stop', 'fire cert', 'foh riser', 'accreditation'];
     const halfWidthMatches = ['parking', 'parking code', 'lx power', 'audio power', 'stage towels', 'bath towels'];
     
     groupKeys.forEach(h => {
@@ -964,11 +972,13 @@
       const displayVal = (val && val.trim() !== '' && val !== '-') ? val : '<span class="empty-val">—</span>';
       const lower = h.toLowerCase().trim();
       
-      let cssClass = 'span-2'; 
+      let cssClass = 'span-4'; 
       if (panelId === 'panel-staff') {
         cssClass = 'staff-item';
-      } else if (halfWidthMatches.some(kw => lower.includes(kw))) {
+      } else if (quarterWidthMatches.some(kw => lower.includes(kw))) {
         cssClass = 'span-1';
+      } else if (halfWidthMatches.some(kw => lower.includes(kw))) {
+        cssClass = 'span-2';
       }
       
       container.innerHTML += `
