@@ -28,7 +28,7 @@
     box-sizing: border-box;
   }
   
-  /* Slimmed Top Nav */
+  /* Top Nav with Integrated Double Show Banner */
   #top-nav {
     display: flex;
     justify-content: space-between;
@@ -36,7 +36,7 @@
     padding: 6px 20px;
     background-color: #11141e;
     border-bottom: 1px solid var(--border-color);
-    height: 40px;
+    height: 45px;
   }
   .nav-title {
     font-size: 14px;
@@ -46,6 +46,26 @@
     align-items: center;
     gap: 10px;
   }
+  
+  /* Double Show Container inside Nav */
+  #double-show-container {
+    display: none;
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 3px 12px;
+    border-radius: 6px;
+    align-items: center;
+    gap: 10px;
+  }
+  .banner-text {
+    color: var(--accent-purple);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .show-selector { display: flex; gap: 6px; }
+
   .nav-controls {
     display: flex;
     gap: 8px;
@@ -55,41 +75,23 @@
     background: #1f2937;
     color: white;
     border: 1px solid var(--border-color);
-    padding: 5px 12px;
+    padding: 4px 10px;
     border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 11px;
     transition: background 0.2s;
   }
   button:hover:not(:disabled) { background: #374151; }
   button:disabled { opacity: 0.5; cursor: not-allowed; }
   .active-btn { background: var(--accent-blue); border-color: var(--accent-blue); }
   
-  #double-show-banner {
-    display: none;
-    background: rgba(139, 92, 246, 0.15);
-    border: 1px solid rgba(139, 92, 246, 0.3);
-    margin: 10px 20px 0;
-    padding: 6px 15px;
-    border-radius: 6px;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .banner-text {
-    color: var(--accent-purple);
-    font-weight: 700;
-    font-size: 11px;
-    letter-spacing: 1px;
-  }
-  .show-selector { display: flex; gap: 8px; }
-
   #main-content {
     flex: 1;
-    padding: 15px 20px;
+    padding: 12px 20px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
     overflow: hidden;
   }
   
@@ -99,7 +101,7 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: 20px;
-    padding: 0 5px;
+    padding: 0;
   }
   #show-title-display {
     flex: 0 0 auto;
@@ -111,7 +113,7 @@
     color: var(--text-main);
   }
   
-  /* Expanded Meta Area (Top Right) */
+  /* Meta Area (Top Right) */
   #show-meta-area {
     flex: 1 1 auto;
     display: flex;
@@ -122,11 +124,11 @@
   .meta-item {
     background: rgba(13, 15, 22, 0.8);
     border: 1px solid #374151;
-    padding: 5px 10px;
+    padding: 4px 10px;
     border-radius: 6px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
   }
   .meta-label {
     font-size: 7.5px;
@@ -142,28 +144,44 @@
     white-space: nowrap;
   }
 
-  /* Symmetrical 2x2 Grid - No Scrolling Allowed */
-  .dashboard-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr; 
-    grid-template-rows: 1fr 1fr;
+  /* Independent Vertical Columns for Dynamic Heights */
+  .dashboard-columns {
+    display: flex;
     gap: 15px;
     flex: 1;
-    min-height: 0; 
+    min-height: 0;
+  }
+  .column {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    flex: 1;
+    min-width: 0;
   }
 
+  /* Panels naturally stretch and shrink based on their column partner */
   .panel {
     background: var(--bg-panel);
     border: 1px solid var(--border-color);
     border-radius: 10px;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Enforces no scrolling */
+    overflow: hidden; 
   }
+  
+  /* Allow panels with more content to consume the remaining height */
+  .panel-flexible {
+    flex: 1 1 auto;
+  }
+  /* Panels with less content will shrink tightly around their text */
+  .panel-tight {
+    flex: 0 1 auto;
+  }
+
   .panel-header {
     background: var(--bg-panel-header);
-    padding: 8px 12px;
-    font-size: 10px;
+    padding: 6px 12px;
+    font-size: 9.5px;
     font-weight: 700;
     color: var(--accent-blue);
     text-transform: uppercase;
@@ -171,45 +189,45 @@
     border-bottom: 1px solid var(--border-color);
   }
   
-  /* Fluid wrapping content areas */
+  /* Fluid wrapping content areas - ZERO scrolling */
   .panel-content {
-    padding: 10px;
+    padding: 8px 10px;
     flex: 1;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
-    gap: 8px;
-    overflow: hidden; /* Enforces no scrolling */
+    gap: 6px;
+    overflow: hidden; 
   }
   
   .data-group {
     background: rgba(13, 15, 22, 0.5);
     border: 1px solid rgba(31, 41, 55, 0.6);
     border-radius: 6px;
-    padding: 6px 10px;
+    padding: clamp(4px, 1vh, 6px) 10px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    flex: 1 1 calc(50% - 8px);
-    min-width: 110px;
+    gap: 1px;
+    flex: 1 1 calc(50% - 6px);
+    min-width: 100px;
   }
   .full-width {
     flex: 1 1 100%;
   }
   .data-label {
-    font-size: 8px;
+    font-size: clamp(7px, 1.2vh, 8.5px);
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
   }
   .data-value {
-    font-size: 12px;
+    font-size: clamp(10px, 1.6vh, 12px);
     font-weight: 600;
     color: var(--text-main);
     word-wrap: break-word;
     white-space: pre-wrap;
-    line-height: 1.2;
+    line-height: 1.15;
   }
   .empty-val { color: #4b5563; font-weight: 400; }
 </style>
@@ -221,44 +239,49 @@
     <span style="background: var(--accent-blue); padding: 3px 6px; border-radius: 4px; color: white; font-size: 11px;">TECH DASHBOARD</span>
     <span id="loaded-status" style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Loading data...</span>
   </div>
-  <div class="nav-controls">
-    <button onclick="changeDate(-1)">&#8592; Prev</button>
-    <button onclick="changeDate(1)">Next &#8594;</button>
+  
+  <div id="double-show-container">
+    <span class="banner-text">Multiple events on this date:</span>
+    <div class="show-selector" id="show-selector-buttons"></div>
   </div>
-</div>
 
-<div id="double-show-banner">
-  <div class="banner-text">DOUBLE SHOW DAY &mdash; Multiple events on this date:</div>
-  <div class="show-selector" id="show-selector-buttons"></div>
+  <div class="nav-controls">
+    <button onclick="changeDate(-1)">&#8592; Prev Day</button>
+    <button onclick="changeDate(1)">Next Day &#8594;</button>
+  </div>
 </div>
 
 <div id="main-content">
   <div id="show-header-area">
     <h1 id="show-title-display">Loading Show...</h1>
     <div id="show-meta-area">
-      <!-- Meta badges will be injected here dynamically -->
+      <!-- Meta badges dynamically injected here -->
     </div>
   </div>
   
-  <div class="dashboard-grid">
-    <div class="panel">
-      <div class="panel-header">1 &bull; Staff on the Day</div>
-      <div class="panel-content" id="panel-staff"></div>
+  <div class="dashboard-columns">
+    <!-- LEFT COLUMN -->
+    <div class="column">
+      <div class="panel panel-flexible">
+        <div class="panel-header">1 &bull; Staff on the Day</div>
+        <div class="panel-content" id="panel-staff"></div>
+      </div>
+      <div class="panel panel-tight">
+        <div class="panel-header">3 &bull; Parking, Admin & Extra Notes</div>
+        <div class="panel-content" id="panel-parking"></div>
+      </div>
     </div>
     
-    <div class="panel">
-      <div class="panel-header">2 &bull; Audio, LX & Risers Requirements</div>
-      <div class="panel-content" id="panel-audiolx"></div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header">3 &bull; Parking, Admin & Extra Notes</div>
-      <div class="panel-content" id="panel-parking"></div>
-    </div>
-    
-    <div class="panel">
-      <div class="panel-header">4 &bull; Post-Show Setup Instructions</div>
-      <div class="panel-content" id="panel-post"></div>
+    <!-- RIGHT COLUMN -->
+    <div class="column">
+      <div class="panel panel-flexible">
+        <div class="panel-header">2 &bull; Audio, LX & Risers Requirements</div>
+        <div class="panel-content" id="panel-audiolx"></div>
+      </div>
+      <div class="panel panel-tight">
+        <div class="panel-header">4 &bull; Post-Show Setup Instructions</div>
+        <div class="panel-content" id="panel-post"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -277,14 +300,11 @@
   
   let headerGroups = { staff: [], parking: [], audiolx: [], post: [] };
   
-  // Logic to strictly determine if a column belongs in the Top Meta section
   function isHeaderMeta(h) {
     const lower = h.toLowerCase();
+    // Maintain exception for Staff
+    if (lower.includes('access') && lower.includes('tech')) return false; 
     
-    // STRICT EXCEPTION: "Tech 3 / Access" belongs in Staff, NOT Meta. 
-    if (lower.includes('access') && lower.includes('tech')) return false;
-    
-    // Explicit matches for the top right bar
     if (lower.includes('access')) return true; 
     
     const metaKw = ['promot', 'rep', 'door', 'load', 'fire cert', 'show stop', 'foh riser', 'accreditation'];
@@ -320,8 +340,6 @@
     
     headers.forEach((h, idx) => {
       if (idx === dateIndex || idx === titleIndex || !h.trim()) return;
-      
-      // If it's a meta field, skip putting it in the 4 grid panels
       if (isHeaderMeta(h)) return;
       
       const lower = h.toLowerCase();
@@ -396,7 +414,7 @@
     container.innerHTML = '';
     
     if (groupKeys.length === 0) {
-      container.innerHTML = `<div class="data-group full-width"><div class="data-value empty-val">No data</div></div>`;
+      container.innerHTML = `<div class="data-group full-width"><div class="data-value empty-val">No data available</div></div>`;
       return;
     }
     
@@ -429,11 +447,11 @@
     const currentDate = dates[currentDateIndex];
     const shows = showsByDate[currentDate];
     
-    const banner = document.getElementById('double-show-banner');
+    const bannerContainer = document.getElementById('double-show-container');
     const selectorContainer = document.getElementById('show-selector-buttons');
     
     if (shows.length > 1) {
-      banner.style.display = 'flex';
+      bannerContainer.style.display = 'flex';
       selectorContainer.innerHTML = '';
       shows.forEach((s, idx) => {
         const btn = document.createElement('button');
@@ -443,14 +461,13 @@
         selectorContainer.appendChild(btn);
       });
     } else {
-      banner.style.display = 'none';
+      bannerContainer.style.display = 'none';
       activeShowIndexOnDate = 0;
     }
 
     const activeShow = shows[activeShowIndexOnDate];
     document.getElementById('show-title-display').innerText = activeShow[headers[titleIndex]] || 'Unnamed Show';
     
-    // Render Top Meta Items explicitly in original order
     const metaContainer = document.getElementById('show-meta-area');
     metaContainer.innerHTML = createMetaBadge('Date', currentDate);
     
@@ -460,7 +477,6 @@
       }
     });
 
-    // Populate Grids
     populatePanel('panel-staff', headerGroups.staff, activeShow);
     populatePanel('panel-audiolx', headerGroups.audiolx, activeShow);
     populatePanel('panel-parking', headerGroups.parking, activeShow);
