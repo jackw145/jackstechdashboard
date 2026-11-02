@@ -112,32 +112,32 @@
     color: var(--text-main);
   }
   
-  /* Meta Area */
+  /* Meta Area (Larger Badges) */
   #show-meta-area {
     flex: 1 1 auto;
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
     justify-content: flex-end;
   }
   .meta-item {
     background: rgba(13, 15, 22, 0.8);
     border: 1px solid #374151;
-    padding: 4px 10px;
+    padding: 6px 14px;
     border-radius: 6px;
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
   }
   .meta-label {
-    font-size: 7px;
+    font-size: clamp(9px, 1.2vh, 11px);
     color: var(--accent-blue);
     text-transform: uppercase;
     font-weight: 700;
     letter-spacing: 1px;
   }
   .meta-value {
-    font-size: 11px;
+    font-size: clamp(14px, 2vh, 17px);
     font-weight: 600;
     color: var(--text-main);
     white-space: nowrap;
@@ -419,10 +419,8 @@
       return;
     }
 
-    // Split items into Full Width (span-2) and Half Width (span-1)
     let fullWidthItems = [];
     let halfWidthItems = [];
-    
     const halfWidthMatches = ['parking', 'parking code', 'lx power', 'audio power', 'stage towels', 'bath towels'];
     
     groupKeys.forEach(h => {
@@ -431,7 +429,6 @@
       if (panelId === 'panel-staff') {
         fullWidthItems.push({ key: h, class: 'staff-item' });
       } else {
-        // Find if this specific header should be half width side-by-side
         if (halfWidthMatches.some(kw => lower.includes(kw))) {
           halfWidthItems.push({ key: h, class: 'span-1' });
         } else {
@@ -440,7 +437,6 @@
       }
     });
 
-    // Reconstruct the array: All full-width items render FIRST, then the half-width pairs perfectly pack at the end
     const sortedItems = [...fullWidthItems, ...halfWidthItems];
     
     sortedItems.forEach(item => {
