@@ -47,7 +47,6 @@
     gap: 10px;
   }
   
-  /* Double Show Container inside Nav */
   #double-show-container {
     display: none;
     background: rgba(139, 92, 246, 0.15);
@@ -118,13 +117,13 @@
     flex: 1 1 auto;
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 5px;
     justify-content: flex-end;
   }
   .meta-item {
     background: rgba(13, 15, 22, 0.8);
     border: 1px solid #374151;
-    padding: 4px 10px;
+    padding: 4px 8px;
     border-radius: 6px;
     display: flex;
     flex-direction: column;
@@ -138,13 +137,13 @@
     letter-spacing: 1px;
   }
   .meta-value {
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 600;
     color: var(--text-main);
     white-space: nowrap;
   }
 
-  /* Independent Vertical Columns for Dynamic Heights */
+  /* Independent Vertical Columns */
   .dashboard-columns {
     display: flex;
     gap: 15px;
@@ -159,7 +158,6 @@
     min-width: 0;
   }
 
-  /* Panels naturally stretch and shrink based on their column partner */
   .panel {
     background: var(--bg-panel);
     border: 1px solid var(--border-color);
@@ -169,18 +167,12 @@
     overflow: hidden; 
   }
   
-  /* Allow panels with more content to consume the remaining height */
-  .panel-flexible {
-    flex: 1 1 auto;
-  }
-  /* Panels with less content will shrink tightly around their text */
-  .panel-tight {
-    flex: 0 1 auto;
-  }
+  .panel-flexible { flex: 1 1 auto; }
+  .panel-tight { flex: 0 1 auto; }
 
   .panel-header {
     background: var(--bg-panel-header);
-    padding: 6px 12px;
+    padding: 5px 12px;
     font-size: 9.5px;
     font-weight: 700;
     color: var(--accent-blue);
@@ -200,29 +192,35 @@
     overflow: hidden; 
   }
   
+  /* --- Width Utility Classes for Data Groups --- */
   .data-group {
     background: rgba(13, 15, 22, 0.5);
     border: 1px solid rgba(31, 41, 55, 0.6);
     border-radius: 6px;
-    padding: clamp(4px, 1vh, 6px) 10px;
+    padding: clamp(3px, 0.8vh, 5px) 8px;
     display: flex;
     flex-direction: column;
     gap: 1px;
-    flex: 1 1 calc(50% - 6px);
-    min-width: 100px;
   }
-  .full-width {
-    flex: 1 1 100%;
-  }
+  
+  /* w-auto: Squeezes tight so many items fit on one line (used for Staff) */
+  .w-auto { flex: 1 1 12%; min-width: 70px; }
+  
+  /* w-half: Forces exactly 2 items per line (used for Parking, Power) */
+  .w-half { flex: 1 1 calc(50% - 6px); min-width: 120px; }
+  
+  /* w-full: Takes up entire width (used for Notes, Post-Show) */
+  .w-full { flex: 1 1 100%; }
+
   .data-label {
-    font-size: clamp(7px, 1.2vh, 8.5px);
+    font-size: clamp(6.5px, 1vh, 8px);
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
   }
   .data-value {
-    font-size: clamp(10px, 1.6vh, 12px);
+    font-size: clamp(10px, 1.5vh, 12px);
     font-weight: 600;
     color: var(--text-main);
     word-wrap: break-word;
@@ -302,11 +300,8 @@
   
   function isHeaderMeta(h) {
     const lower = h.toLowerCase();
-    // Maintain exception for Staff
     if (lower.includes('access') && lower.includes('tech')) return false; 
-    
     if (lower.includes('access')) return true; 
-    
     const metaKw = ['promot', 'rep', 'door', 'load', 'fire cert', 'show stop', 'foh riser', 'accreditation'];
     return metaKw.some(kw => lower.includes(kw));
   }
@@ -414,17 +409,28 @@
     container.innerHTML = '';
     
     if (groupKeys.length === 0) {
-      container.innerHTML = `<div class="data-group full-width"><div class="data-value empty-val">No data available</div></div>`;
+      container.innerHTML = `<div class="data-group w-full"><div class="data-value empty-val">No data available</div></div>`;
       return;
     }
     
     groupKeys.forEach(h => {
       const val = activeShow[h];
       const displayVal = (val && val.trim() !== '' && val !== '-') ? val : '<span class="empty-val">—</span>';
-      const isFullWidth = (h.toLowerCase().includes('note') || h.toLowerCase().includes('setup') || panelId === 'panel-post');
+      
+      const lower = h.toLowerCase();
+      let widthClass = 'w-half'; // Default sets things 2 items per line (good for Audio/LX defaults)
+      
+      // Determine explicit sizes based on your requirements
+      if (lower.includes('note') || lower.includes('setup') || panelId === 'panel-post') {
+        widthClass = 'w-full';
+      } else if (panelId === 'panel-staff') {
+        widthClass = 'w-auto'; // Shove all staff items side-by-side onto 1 line
+      } else if (lower.includes('power') || lower.includes('parking') || lower.includes('code')) {
+        widthClass = 'w-half'; // Force Power and Parking to sit exactly 50/50 alongside each other
+      }
       
       container.innerHTML += `
-        <div class="data-group ${isFullWidth ? 'full-width' : ''}">
+        <div class="data-group ${widthClass}">
           <div class="data-label">${h}</div>
           <div class="data-value">${displayVal}</div>
         </div>
