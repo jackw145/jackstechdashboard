@@ -6,9 +6,8 @@
 <title>Live Tech Dashboard</title>
 <style>
   :root {
-    --bg-main: #0a0b10;
-    --bg-panel: #12141d;
-    --bg-panel-header: #1a1d27;
+    --bg-main: #06070a;
+    --bg-panel: #10121a;
     --text-main: #ffffff;
     --text-muted: #8b949e;
     --accent-blue: #3b82f6;
@@ -26,6 +25,8 @@
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    /* Soft ambient background glow */
+    background-image: radial-gradient(circle at 50% 0%, rgba(20, 25, 40, 1) 0%, rgba(6, 7, 10, 1) 80%);
   }
   
   /* Top Nav */
@@ -34,9 +35,10 @@
     justify-content: space-between;
     align-items: center;
     padding: 6px 16px;
-    background-color: #11141e;
-    border-bottom: 1px solid var(--border-color);
+    background-color: rgba(10, 12, 18, 0.7);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
     height: 42px;
+    backdrop-filter: blur(10px);
   }
   .nav-title {
     font-size: 12px;
@@ -71,19 +73,23 @@
     align-items: center;
   }
   button {
-    background: #1f2937;
+    background: rgba(255, 255, 255, 0.05);
     color: white;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 4px 12px;
     border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
     font-size: 11px;
-    transition: background 0.2s;
+    transition: all 0.2s;
   }
-  button:hover:not(:disabled) { background: #374151; }
+  button:hover:not(:disabled) { background: rgba(255,255,255,0.1); }
   button:disabled { opacity: 0.5; cursor: not-allowed; }
-  .active-btn { background: var(--accent-blue); border-color: var(--accent-blue); }
+  .active-btn { 
+    background: rgba(59, 130, 246, 0.2); 
+    border-color: rgba(59, 130, 246, 0.5); 
+    color: #60a5fa;
+  }
   
   #main-content {
     flex: 1;
@@ -114,6 +120,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
   }
   
   /* Meta Area */
@@ -127,8 +134,9 @@
     overflow: hidden; 
   }
   .meta-item {
-    background: rgba(13, 15, 22, 0.8);
-    border: 1px solid #374151;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
     padding: 5px 12px;
     border-radius: 6px;
     display: flex;
@@ -164,40 +172,69 @@
     min-width: 0;
   }
 
+  /* --- AESTHETIC PANEL UPGRADES --- */
   .panel {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-color);
+    background-color: var(--bg-panel);
     border-radius: 10px;
     display: flex;
     flex-direction: column;
     overflow: hidden; 
+    /* Soft Faded Edge Effect */
+    border: 1px solid rgba(255,255,255,0.03);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5);
   }
   
   .panel-flexible { flex: 1 1 auto; }
   
+  /* Color Theme: Staff (Blue) */
+  .panel-color-staff {
+    background: linear-gradient(145deg, rgba(59, 130, 246, 0.08) 0%, var(--bg-panel) 50%);
+    border-top: 1px solid rgba(59, 130, 246, 0.2);
+  }
+  .panel-color-staff .panel-header { color: #60a5fa; border-bottom: 1px solid rgba(59, 130, 246, 0.15); }
+
+  /* Color Theme: Parking (Green) */
+  .panel-color-parking {
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.08) 0%, var(--bg-panel) 50%);
+    border-top: 1px solid rgba(16, 185, 129, 0.2);
+  }
+  .panel-color-parking .panel-header { color: #34d399; border-bottom: 1px solid rgba(16, 185, 129, 0.15); }
+
+  /* Color Theme: Audio/LX (Purple) */
+  .panel-color-audiolx {
+    background: linear-gradient(145deg, rgba(139, 92, 246, 0.08) 0%, var(--bg-panel) 50%);
+    border-top: 1px solid rgba(139, 92, 246, 0.2);
+  }
+  .panel-color-audiolx .panel-header { color: #a78bfa; border-bottom: 1px solid rgba(139, 92, 246, 0.15); }
+
+  /* Color Theme: Post-Show (Amber) */
+  .panel-color-post {
+    background: linear-gradient(145deg, rgba(245, 158, 11, 0.08) 0%, var(--bg-panel) 50%);
+    border-top: 1px solid rgba(245, 158, 11, 0.2);
+  }
+  .panel-color-post .panel-header { color: #fbbf24; border-bottom: 1px solid rgba(245, 158, 11, 0.15); }
+
   .panel-header {
-    background: var(--bg-panel-header);
+    background: rgba(0, 0, 0, 0.2); /* Lets the gradient shine through */
     padding: 6px 12px;
     font-size: 9.5px;
     font-weight: 700;
-    color: var(--accent-blue);
     text-transform: uppercase;
     letter-spacing: 1px;
-    border-bottom: 1px solid var(--border-color);
   }
   
-  /* Strict Grid System */
+  /* --- Strict Grid System --- */
   .panel-grid-layout {
     padding: 10px;
     flex: 1;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr; 
     align-content: flex-start;
-    gap: 8px;
+    gap: 8px; 
     overflow: hidden; 
   }
   
-  /* Strict Flex Row for Staff */
+  /* --- Strict Flex Row for Staff --- */
   .panel-staff-row {
     padding: 10px;
     flex: 1;
@@ -210,8 +247,9 @@
 
   /* Box styling */
   .data-group {
-    background: rgba(13, 15, 22, 0.5);
-    border: 1px solid rgba(31, 41, 55, 0.6);
+    background: rgba(0, 0, 0, 0.35); /* Darker inset embedded look */
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.15);
     border-radius: 6px;
     padding: clamp(4px, 1vh, 8px) 10px;
     display: flex;
@@ -247,7 +285,7 @@
 
 <div id="top-nav">
   <div class="nav-title">
-    <span style="background: var(--accent-blue); padding: 3px 6px; border-radius: 4px; color: white; font-size: 11px;">TECH DASHBOARD</span>
+    <span style="background: rgba(59,130,246,0.3); padding: 3px 6px; border-radius: 4px; color: #60a5fa; font-size: 11px; border: 1px solid rgba(59,130,246,0.5);">TECH DASHBOARD</span>
     <span id="loaded-status" style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Loading data...</span>
   </div>
   
@@ -271,11 +309,11 @@
   <div class="dashboard-columns">
     <!-- LEFT COLUMN -->
     <div class="column">
-      <div class="panel panel-flexible" style="flex: 0 1 auto;"> 
+      <div class="panel panel-flexible panel-color-staff" style="flex: 0 1 auto;"> 
         <div class="panel-header">1 &bull; Staff on the Day</div>
         <div class="panel-staff-row" id="panel-staff"></div>
       </div>
-      <div class="panel panel-flexible">
+      <div class="panel panel-flexible panel-color-parking">
         <div class="panel-header">3 &bull; Parking, Admin & Extra Notes</div>
         <div class="panel-grid-layout" id="panel-parking"></div>
       </div>
@@ -283,11 +321,11 @@
     
     <!-- RIGHT COLUMN -->
     <div class="column">
-      <div class="panel panel-flexible">
+      <div class="panel panel-flexible panel-color-audiolx">
         <div class="panel-header">2 &bull; Audio, LX, Risers & Supports</div>
         <div class="panel-grid-layout" id="panel-audiolx"></div>
       </div>
-      <div class="panel panel-flexible">
+      <div class="panel panel-flexible panel-color-post">
         <div class="panel-header">4 &bull; Post-Show Setup Instructions</div>
         <div class="panel-grid-layout" id="panel-post"></div>
       </div>
@@ -424,7 +462,6 @@
       return;
     }
 
-    // STRICT CUSTOM SORTING LOGIC
     function getSortRank(h) {
       const lower = h.toLowerCase().trim();
       
@@ -437,7 +474,6 @@
         if (lower.includes('note')) return 6;
         if (lower.includes('hire')) return 7;
       } 
-      
       else if (panelId === 'panel-audiolx') {
         if (lower === 'audio' || (lower.includes('audio') && !lower.includes('power'))) return 1;
         if (lower.includes('light') || lower.includes('sfx') || (lower.includes('lx') && !lower.includes('power'))) return 2;
@@ -449,10 +485,8 @@
       return 99;
     }
 
-    // Sort headers based on designated rankings
     groupKeys.sort((a, b) => getSortRank(a) - getSortRank(b));
     
-    // Exact list of pairs that must be half-width (span-1)
     const halfWidthMatches = ['parking', 'parking code', 'lx power', 'audio power', 'stage towels', 'bath towels'];
     
     groupKeys.forEach(h => {
