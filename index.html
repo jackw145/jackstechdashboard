@@ -434,6 +434,7 @@
   </div>
 
   <div class="nav-controls">
+    <!-- View Switchers -->
     <button id="btn-view-day" class="active-btn" onclick="switchView('day')">1 &bull; Day</button>
     <button id="btn-view-3shows" onclick="switchView('3shows')">3 &bull; Shows</button>
     <button id="btn-view-month" onclick="switchView('month')">1 &bull; Month</button>
@@ -531,7 +532,6 @@
     if (lower.includes('access') && lower.includes('tech')) return false; 
     if (lower.includes('access')) return true; 
     
-    // Explicitly removed the admin fields from being treated as 'meta' so they drop down into the panels
     const metaKw = ['promot', 'rep', 'door', 'load'];
     return metaKw.some(kw => lower.includes(kw));
   }
@@ -584,7 +584,6 @@
       if (isHeaderMeta(h)) return;
       const lower = h.toLowerCase();
       
-      // BROAD OVERRIDE: Catch these exactly as they are so formatting/spacing differences in the CSV don't break them.
       const isAdminItem = lower.includes('stop') || lower.includes('fire') || lower.includes('foh') || lower.includes('accredit');
       
       if (isAdminItem) {
@@ -856,12 +855,19 @@
     upcomingShows.forEach(show => {
       const title = show[headers[titleIndex]] || 'Unnamed Show';
       const date = show.__dateKey;
+      
       const promotor = getFieldValue(show, ['promot']);
       const access = getFieldValue(show, ['access']);
       const loadIn = getFieldValue(show, ['load']);
       const staffing = getStaffingHTML(show, false, 'column');
+      
       const audio = getFieldValue(show, ['audio'], ['power']);
       const lx = getFieldValue(show, ['light', 'sfx', 'lx'], ['power']);
+
+      const showStop = getFieldValue(show, ['stop']);
+      const fireCert = getFieldValue(show, ['fire']);
+      const fohRiser = getFieldValue(show, ['foh']);
+      const accredit = getFieldValue(show, ['accredit']);
 
       container.innerHTML += `
         <div class="overview-card">
@@ -872,6 +878,25 @@
             <div class="data-group tint-green"><div class="data-label">Promotor</div><div class="data-value">${promotor}</div></div>
             <div class="data-group tint-green"><div class="data-label">Access</div><div class="data-value">${access}</div></div>
             <div class="data-group span-2 tint-green" style="grid-column: span 2;"><div class="data-label">Load In</div><div class="data-value">${loadIn}</div></div>
+          </div>
+          
+          <div style="display:flex; gap: 8px;">
+            <div class="data-group tint-green" style="flex: 1; padding: 6px 8px; min-width: 0;">
+              <div class="data-label" style="font-size: 8.5px; margin-bottom: 2px;">Show Stop</div>
+              <div class="data-value" style="font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${showStop}</div>
+            </div>
+            <div class="data-group tint-green" style="flex: 1; padding: 6px 8px; min-width: 0;">
+              <div class="data-label" style="font-size: 8.5px; margin-bottom: 2px;">Fire Cert</div>
+              <div class="data-value" style="font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${fireCert}</div>
+            </div>
+            <div class="data-group tint-green" style="flex: 1; padding: 6px 8px; min-width: 0;">
+              <div class="data-label" style="font-size: 8.5px; margin-bottom: 2px;">FOH Riser</div>
+              <div class="data-value" style="font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${fohRiser}</div>
+            </div>
+            <div class="data-group tint-green" style="flex: 1; padding: 6px 8px; min-width: 0;">
+              <div class="data-label" style="font-size: 8.5px; margin-bottom: 2px;">Accredit</div>
+              <div class="data-value" style="font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${accredit}</div>
+            </div>
           </div>
           
           <div class="data-group tint-blue" style="justify-content: flex-start; padding: 12px 14px;">
@@ -942,7 +967,6 @@
       return;
     }
 
-    // BROAD KEYWORD SORTING for reliability
     function getSortRank(h) {
       const lower = h.toLowerCase().trim();
       if (panelId === 'panel-parking') {
