@@ -28,12 +28,12 @@
     box-sizing: border-box;
   }
   
-  /* Top Nav with Integrated Double Show Banner */
+  /* Top Nav */
   #top-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 20px;
+    padding: 10px 20px;
     background-color: #11141e;
     border-bottom: 1px solid var(--border-color);
     height: 50px;
@@ -51,7 +51,7 @@
     display: none;
     background: rgba(139, 92, 246, 0.15);
     border: 1px solid rgba(139, 92, 246, 0.3);
-    padding: 4px 14px;
+    padding: 6px 14px;
     border-radius: 6px;
     align-items: center;
     gap: 12px;
@@ -94,7 +94,7 @@
     overflow: hidden;
   }
   
-  /* Dynamic Header Layout */
+  /* Header Layout */
   #show-header-area {
     display: flex;
     justify-content: space-between;
@@ -105,14 +105,14 @@
   #show-title-display {
     flex: 0 0 auto;
     max-width: 35%;
-    font-size: clamp(28px, 4vw, 42px);
+    font-size: clamp(32px, 4vw, 48px);
     font-weight: 900;
     margin: 0;
     line-height: 1.1;
     color: var(--text-main);
   }
   
-  /* Meta Area (Top Right) */
+  /* Meta Area */
   #show-meta-area {
     flex: 1 1 auto;
     display: flex;
@@ -143,7 +143,7 @@
     white-space: nowrap;
   }
 
-  /* Independent Vertical Columns */
+  /* Structural Columns */
   .dashboard-columns {
     display: flex;
     gap: 20px;
@@ -168,11 +168,10 @@
   }
   
   .panel-flexible { flex: 1 1 auto; }
-  .panel-tight { flex: 0 1 auto; }
-
+  
   .panel-header {
     background: var(--bg-panel-header);
-    padding: 8px 14px;
+    padding: 10px 14px;
     font-size: 11px;
     font-weight: 700;
     color: var(--accent-blue);
@@ -181,49 +180,57 @@
     border-bottom: 1px solid var(--border-color);
   }
   
-  /* Fluid wrapping content areas - Hidden scrollbar fallback */
-  .panel-content {
+  /* --- Strict Grid System for Panels 2, 3, 4 --- */
+  .panel-grid-layout {
+    padding: 12px;
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Exactly 2 columns */
+    align-content: flex-start;
+    gap: 10px;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .panel-grid-layout::-webkit-scrollbar { display: none; }
+  
+  /* --- Strict Flex Row for Staff (Panel 1) --- */
+  .panel-staff-row {
     padding: 12px;
     flex: 1;
     display: flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
-    gap: 8px;
-    overflow-y: auto; 
-    scrollbar-width: none;
+    flex-direction: row;
+    flex-wrap: nowrap; /* Forces exactly one line */
+    align-items: stretch;
+    gap: 10px;
   }
-  .panel-content::-webkit-scrollbar { display: none; }
-  
-  /* --- Width Utility Classes for Data Groups --- */
+
+  /* Data Group styling (The boxes themselves) */
   .data-group {
     background: rgba(13, 15, 22, 0.5);
     border: 1px solid rgba(31, 41, 55, 0.6);
     border-radius: 8px;
-    padding: clamp(6px, 1vh, 8px) 12px;
+    padding: clamp(8px, 1.5vh, 14px) 14px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    gap: 2px;
+    justify-content: center;
+    gap: 4px;
   }
   
-  /* w-third: 3 items per line (Perfect for Staff) */
-  .w-third { flex: 1 1 calc(33.333% - 8px); min-width: 90px; }
+  /* Grid sizing classes */
+  .span-1 { grid-column: span 1; } /* Sits side-by-side */
+  .span-2 { grid-column: span 2; } /* Full width */
   
-  /* w-half: 2 items per line (Perfect for Pairs: Parking, Towels, Power) */
-  .w-half { flex: 1 1 calc(50% - 8px); min-width: 140px; }
-  
-  /* w-full: Full width (Perfect for Notes & Requirements) */
-  .w-full { flex: 1 1 100%; min-width: 100%; }
+  .staff-item { flex: 1; } /* Shares single row equally */
 
   .data-label {
-    font-size: clamp(8px, 1vh, 9px);
+    font-size: clamp(8.5px, 1.2vh, 10px);
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
   }
   .data-value {
-    font-size: clamp(12px, 1.6vh, 15px);
+    font-size: clamp(13px, 1.8vh, 16px);
     font-weight: 600;
     color: var(--text-main);
     word-wrap: break-word;
@@ -255,21 +262,19 @@
 <div id="main-content">
   <div id="show-header-area">
     <h1 id="show-title-display">Loading Show...</h1>
-    <div id="show-meta-area">
-      <!-- Meta badges dynamically injected here -->
-    </div>
+    <div id="show-meta-area"></div>
   </div>
   
   <div class="dashboard-columns">
     <!-- LEFT COLUMN -->
     <div class="column">
-      <div class="panel panel-flexible">
+      <div class="panel panel-flexible" style="flex: 0 1 auto;"> <!-- Tightens height allowing Parking more room if needed -->
         <div class="panel-header">1 &bull; Staff on the Day</div>
-        <div class="panel-content" id="panel-staff"></div>
+        <div class="panel-staff-row" id="panel-staff"></div>
       </div>
-      <div class="panel panel-tight">
+      <div class="panel panel-flexible">
         <div class="panel-header">3 &bull; Parking, Admin & Extra Notes</div>
-        <div class="panel-content" id="panel-parking"></div>
+        <div class="panel-grid-layout" id="panel-parking"></div>
       </div>
     </div>
     
@@ -277,11 +282,11 @@
     <div class="column">
       <div class="panel panel-flexible">
         <div class="panel-header">2 &bull; Audio, LX, Risers & Supports</div>
-        <div class="panel-content" id="panel-audiolx"></div>
+        <div class="panel-grid-layout" id="panel-audiolx"></div>
       </div>
-      <div class="panel panel-tight">
+      <div class="panel panel-flexible">
         <div class="panel-header">4 &bull; Post-Show Setup Instructions</div>
-        <div class="panel-content" id="panel-post"></div>
+        <div class="panel-grid-layout" id="panel-post"></div>
       </div>
     </div>
   </div>
@@ -412,28 +417,29 @@
     container.innerHTML = '';
     
     if (groupKeys.length === 0) {
-      container.innerHTML = `<div class="data-group w-full"><div class="data-value empty-val">No data available</div></div>`;
+      container.innerHTML = `<div class="data-group span-2"><div class="data-value empty-val">No data available</div></div>`;
       return;
     }
     
     groupKeys.forEach(h => {
       const val = activeShow[h];
       const displayVal = (val && val.trim() !== '' && val !== '-') ? val : '<span class="empty-val">—</span>';
+      const lower = h.toLowerCase().trim();
       
-      const lower = h.toLowerCase();
-      let widthClass = 'w-full'; 
+      let cssClass = 'span-2'; // Default everything to full width
       
-      // Assign grid sizing logic based on specific pairs and groups
       if (panelId === 'panel-staff') {
-        widthClass = 'w-third'; // 3 items per line
-      } else if (lower.includes('power') || lower.includes('parking') || lower.includes('code') || lower.includes('towel') || lower.includes('support')) {
-        widthClass = 'w-half'; // 2 items per line side-by-side
+        cssClass = 'staff-item'; // Staff gets its own single-row class
       } else {
-        widthClass = 'w-full'; // Descriptions, Notes, Setup take full width
+        // Explicitly check for exact names that should sit side-by-side (50% width)
+        const halfWidthMatches = ['parking', 'parking code', 'lx power', 'audio power', 'stage towels', 'bath towels'];
+        if (halfWidthMatches.includes(lower)) {
+          cssClass = 'span-1';
+        }
       }
       
       container.innerHTML += `
-        <div class="data-group ${widthClass}">
+        <div class="data-group ${cssClass}">
           <div class="data-label">${h}</div>
           <div class="data-value">${displayVal}</div>
         </div>
