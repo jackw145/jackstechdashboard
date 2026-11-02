@@ -318,7 +318,7 @@
     font-size: 10.5px;
   }
   .overview-card .data-value {
-    font-size: 15.5px;
+    font-size: 14.5px;
     line-height: 1.35;
   }
 
@@ -648,10 +648,11 @@
     renderCurrentDate();
   }
 
-  function getFieldValue(showObj, queryKeywords) {
+  function getFieldValue(showObj, queryKeywords, excludeKeywords = []) {
     for (let kw of queryKeywords) {
       const foundKey = Object.keys(showObj).find(k => {
         const lower = k.toLowerCase();
+        if (excludeKeywords.some(ex => lower.includes(ex))) return false;
         if (kw === 'access' && lower.includes('tech')) return false; 
         return lower.includes(kw);
       });
@@ -676,7 +677,6 @@
       const val = showObj[h];
       if (val && val.trim() !== '' && val !== '-') {
         if (layout === 'row') {
-          // Soft pill layout for 1-Month view
           html.push(`
             <div style="display:inline-flex; align-items:center; background:rgba(255,255,255,0.04); padding:4px 8px; border-radius:8px; margin:2px 4px 2px 0; white-space:nowrap;">
               <span style="color:var(--accent-blue); font-size:10px; font-weight:700; text-transform:uppercase; margin-right:4px;">${h}:</span>
@@ -684,7 +684,6 @@
             </div>
           `);
         } else {
-          // Stacked layout for 3-Show overview
           html.push(`
             <div style="background:rgba(0,0,0,0.25); padding:8px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.02); display:flex; flex-direction:column; align-items:flex-start; gap:3px;">
               <span style="color:var(--text-muted); font-size:9.5px; text-transform:uppercase; font-weight:700; letter-spacing:0.5px;">${h}</span>
@@ -728,8 +727,11 @@
       const promotor = getFieldValue(show, ['promot']);
       const access = getFieldValue(show, ['access']);
       const loadIn = getFieldValue(show, ['load']);
-      // 3 Shows: Layout in columns, do not exclude
       const staffing = getStaffingHTML(show, false, 'column');
+      
+      // Specifically pull audio and lx, avoiding the power fields
+      const audio = getFieldValue(show, ['audio'], ['power']);
+      const lx = getFieldValue(show, ['light', 'sfx', 'lx'], ['power']);
 
       container.innerHTML += `
         <div class="overview-card">
@@ -740,9 +742,19 @@
             <div class="data-group"><div class="data-label">Access</div><div class="data-value">${access}</div></div>
             <div class="data-group span-2" style="grid-column: span 2;"><div class="data-label">Load In</div><div class="data-value">${loadIn}</div></div>
           </div>
-          <div class="data-group" style="flex:1; justify-content: flex-start; padding: 12px 14px;">
+          <div class="data-group" style="justify-content: flex-start; padding: 12px 14px;">
             <div class="data-label" style="font-size: 11px; margin-bottom: 4px;">Staffing Information</div>
             ${staffing}
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; flex:1;">
+            <div class="data-group" style="justify-content: flex-start;">
+              <div class="data-label">Audio</div>
+              <div class="data-value" style="font-size: 13.5px; line-height: 1.35; padding-top:4px;">${audio}</div>
+            </div>
+            <div class="data-group" style="justify-content: flex-start;">
+              <div class="data-label">Lighting / SFX</div>
+              <div class="data-value" style="font-size: 13.5px; line-height: 1.35; padding-top:4px;">${lx}</div>
+            </div>
           </div>
         </div>
       `;
@@ -777,7 +789,6 @@
       const promotor = getFieldValue(show, ['promot']);
       const access = getFieldValue(show, ['access']);
       const loadIn = getFieldValue(show, ['load']);
-      // 1 Month: Layout in rows, EXCLUDE crew
       const staffing = getStaffingHTML(show, true, 'row'); 
 
       tbody.innerHTML += `
