@@ -270,7 +270,7 @@
   }
   .empty-val { color: #4b5563; font-weight: 400; }
 
-  /* --- OVERVIEW VIEWS STYLING --- */
+  /* --- OVERVIEW VIEWS STYLING (Fonts Adjusted) --- */
   .overview-view {
     display: none;
     flex: 1;
@@ -298,12 +298,12 @@
     box-shadow: 0 10px 30px -10px rgba(0,0,0,0.8);
   }
   .overview-card-title {
-    font-size: 18px;
+    font-size: 20px; /* Increased from 18px */
     font-weight: 900;
     color: var(--text-main);
   }
   .overview-card-date {
-    font-size: 11px;
+    font-size: 12px; /* Increased from 11px */
     color: var(--accent-blue);
     font-weight: 700;
     text-transform: uppercase;
@@ -322,9 +322,9 @@
     background: var(--bg-panel);
   }
   .overview-table th, .overview-table td {
-    padding: 10px 15px;
+    padding: 12px 15px; /* Increased padding slightly */
     text-align: left;
-    font-size: 12px;
+    font-size: 13.5px; /* Increased from 12px */
     border-bottom: 1px solid rgba(255,255,255,0.05);
   }
   .overview-table th {
@@ -333,7 +333,7 @@
     background: #10121a;
     color: var(--accent-blue);
     text-transform: uppercase;
-    font-size: 10px;
+    font-size: 11px; /* Increased from 10px */
     letter-spacing: 1px;
     z-index: 2;
   }
@@ -399,13 +399,13 @@
 
 <!-- ================= VIEW 2: 3 SHOWS OVERVIEW ================= -->
 <div id="view-3shows" class="main-container overview-view">
-  <h2 style="margin:0; font-size: 20px; font-weight: 800;">Next 3 Upcoming Shows Overview</h2>
+  <h2 style="margin:0; font-size: 22px; font-weight: 800;">Next 3 Upcoming Shows Overview</h2>
   <div class="overview-grid-3" id="container-3shows"></div>
 </div>
 
 <!-- ================= VIEW 3: MONTH OVERVIEW ================= -->
 <div id="view-month" class="main-container overview-view">
-  <h2 style="margin:0; font-size: 20px; font-weight: 800;" id="month-title-display">Monthly Shows Overview</h2>
+  <h2 style="margin:0; font-size: 22px; font-weight: 800;" id="month-title-display">Upcoming Shows Overview (Rolling 1 Month)</h2>
   <div class="overview-table-container">
     <table class="overview-table">
       <thead>
@@ -639,7 +639,6 @@
     for (let kw of queryKeywords) {
       const foundKey = Object.keys(showObj).find(k => {
         const lower = k.toLowerCase();
-        // Strict ignore of "Tech" when searching for "Access" to prevent grabbing "Tech 3 / Access"
         if (kw === 'access' && lower.includes('tech')) return false; 
         return lower.includes(kw);
       });
@@ -675,7 +674,7 @@
     }).sort((a,b) => a.__parsedDate - b.__parsedDate).slice(0, 3);
 
     if (upcomingShows.length === 0) {
-      container.innerHTML = `<div style="color:var(--text-muted); font-size: 14px;">No upcoming shows found.</div>`;
+      container.innerHTML = `<div style="color:var(--text-muted); font-size: 15px;">No upcoming shows found.</div>`;
       return;
     }
 
@@ -692,37 +691,39 @@
           <div class="overview-card-date">${date}</div>
           <div class="overview-card-title">${title}</div>
           <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <div class="data-group"><div class="data-label">Promotor</div><div class="data-value" style="font-size:11.5px;">${promotor}</div></div>
-            <div class="data-group"><div class="data-label">Access</div><div class="data-value" style="font-size:11.5px;">${access}</div></div>
-            <div class="data-group span-2" style="grid-column: span 2;"><div class="data-label">Load In</div><div class="data-value" style="font-size:11.5px;">${loadIn}</div></div>
+            <div class="data-group"><div class="data-label">Promotor</div><div class="data-value" style="font-size:12.5px;">${promotor}</div></div>
+            <div class="data-group"><div class="data-label">Access</div><div class="data-value" style="font-size:12.5px;">${access}</div></div>
+            <div class="data-group span-2" style="grid-column: span 2;"><div class="data-label">Load In</div><div class="data-value" style="font-size:12.5px;">${loadIn}</div></div>
           </div>
           <div class="data-group" style="flex:1; justify-content: flex-start;">
             <div class="data-label">Staffing Information</div>
-            <div class="data-value" style="font-size:11px; line-height:1.4; padding-top:4px;">${staffing}</div>
+            <div class="data-value" style="font-size:12px; line-height:1.4; padding-top:4px;">${staffing}</div>
           </div>
         </div>
       `;
     });
   }
 
-  // --- RENDER VIEW 3: MONTH ---
+  // --- RENDER VIEW 3: ROLLING 1-MONTH ---
   function renderMonthView() {
     const tbody = document.getElementById('table-month-body');
     tbody.innerHTML = '';
 
     const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
-
-    document.getElementById('month-title-display').innerText = `Monthly Shows Overview — ${today.toLocaleString('default', { month: 'long' })} ${currentYear}`;
+    today.setHours(0,0,0,0);
+    
+    const oneMonthFromNow = new Date(today);
+    oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
 
     const monthShows = allShowsFlat.filter(s => {
       if (isNaN(s.__parsedDate)) return false;
-      return s.__parsedDate.getMonth() === currentMonth && s.__parsedDate.getFullYear() === currentYear;
+      const showTime = s.__parsedDate.getTime();
+      // Only include shows from today onwards, up to exactly 1 month ahead
+      return showTime >= today.getTime() && showTime <= oneMonthFromNow.getTime();
     }).sort((a,b) => a.__parsedDate - b.__parsedDate);
 
     if (monthShows.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding: 20px;">No shows scheduled for this month.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding: 20px; font-size: 14px;">No upcoming shows found in the next 30 days.</td></tr>`;
       return;
     }
 
@@ -741,7 +742,7 @@
           <td>${promotor}</td>
           <td>${access}</td>
           <td>${loadIn}</td>
-          <td style="font-size:11px; line-height:1.2;">${staffing}</td>
+          <td style="font-size:12px; line-height:1.3;">${staffing}</td>
         </tr>
       `;
     });
