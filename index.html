@@ -519,7 +519,7 @@
   let autoRotateTimer = null;
   let isAutoRotating = false;
   const viewSequence = ['day', '3shows', 'month'];
-  const ROTATE_INTERVAL_MS = 120000; 
+  const ROTATE_INTERVAL_MS = 120000; // Auto Rotate set to 2 Minutes
   
   let headers = [];
   let dateIndex = -1;
@@ -1078,7 +1078,9 @@
   }
 
   fetchData(true);
-  setInterval(() => fetchData(false), 60000); 
+  
+  // Background data refresh set to 10 seconds
+  setInterval(() => fetchData(false), 10000); 
 </script>
 </body>
 </html>
