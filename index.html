@@ -96,6 +96,24 @@
     color: #60a5fa;
   }
   
+  #show-dropdown {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 11px;
+    max-width: 170px;
+    text-overflow: ellipsis;
+    outline: none;
+  }
+  #show-dropdown option {
+    background: var(--bg-panel);
+    color: white;
+  }
+
   .main-container {
     flex: 1;
     padding: 12px 20px;
@@ -195,24 +213,28 @@
     border-top: 1px solid rgba(59, 130, 246, 0.2);
   }
   .panel-color-staff .panel-header { color: #60a5fa; border-bottom: 1px solid rgba(59, 130, 246, 0.15); }
+  .panel-color-staff .data-group { background: rgba(59, 130, 246, 0.12); border-color: rgba(59, 130, 246, 0.25); }
 
   .panel-color-parking {
     background: linear-gradient(145deg, rgba(16, 185, 129, 0.08) 0%, var(--bg-panel) 50%);
     border-top: 1px solid rgba(16, 185, 129, 0.2);
   }
   .panel-color-parking .panel-header { color: #34d399; border-bottom: 1px solid rgba(16, 185, 129, 0.15); }
+  .panel-color-parking .data-group { background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.25); }
 
   .panel-color-audiolx {
     background: linear-gradient(145deg, rgba(139, 92, 246, 0.08) 0%, var(--bg-panel) 50%);
     border-top: 1px solid rgba(139, 92, 246, 0.2);
   }
   .panel-color-audiolx .panel-header { color: #a78bfa; border-bottom: 1px solid rgba(139, 92, 246, 0.15); }
+  .panel-color-audiolx .data-group { background: rgba(139, 92, 246, 0.12); border-color: rgba(139, 92, 246, 0.25); }
 
   .panel-color-post {
     background: linear-gradient(145deg, rgba(245, 158, 11, 0.08) 0%, var(--bg-panel) 50%);
     border-top: 1px solid rgba(245, 158, 11, 0.2);
   }
   .panel-color-post .panel-header { color: #fbbf24; border-bottom: 1px solid rgba(245, 158, 11, 0.15); }
+  .panel-color-post .data-group { background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.25); }
 
   .panel-header {
     background: rgba(0, 0, 0, 0.2); 
@@ -257,20 +279,20 @@
   }
   
   .tint-green {
-    background: linear-gradient(145deg, rgba(16, 185, 129, 0.1) 0%, rgba(0,0,0,0.3) 100%) !important;
-    border-color: rgba(16, 185, 129, 0.2) !important;
+    background: rgba(16, 185, 129, 0.12) !important;
+    border-color: rgba(16, 185, 129, 0.25) !important;
   }
   .tint-green .data-label { color: #34d399 !important; }
   
   .tint-blue {
-    background: linear-gradient(145deg, rgba(59, 130, 246, 0.1) 0%, rgba(0,0,0,0.3) 100%) !important;
-    border-color: rgba(59, 130, 246, 0.2) !important;
+    background: rgba(59, 130, 246, 0.12) !important;
+    border-color: rgba(59, 130, 246, 0.25) !important;
   }
   .tint-blue .data-label { color: #60a5fa !important; }
   
   .tint-purple {
-    background: linear-gradient(145deg, rgba(139, 92, 246, 0.1) 0%, rgba(0,0,0,0.3) 100%) !important;
-    border-color: rgba(139, 92, 246, 0.2) !important;
+    background: rgba(139, 92, 246, 0.12) !important;
+    border-color: rgba(139, 92, 246, 0.25) !important;
   }
   .tint-purple .data-label { color: #a78bfa !important; }
   
@@ -442,6 +464,10 @@
     
     <span style="color: rgba(255,255,255,0.2);">|</span>
     
+    <select id="show-dropdown" onchange="jumpToDropdownShow()">
+      <option value="">Loading shows...</option>
+    </select>
+    
     <button id="nav-today" onclick="jumpToToday()" style="background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); color: #93c5fd;">Today</button>
     <button id="nav-prev" onclick="changeDate(-1)">&#8592; Prev</button>
     <button id="nav-next" onclick="changeDate(1)">Next &#8594;</button>
@@ -519,18 +545,19 @@
   let autoRotateTimer = null;
   let isAutoRotating = false;
   const viewSequence = ['day', '3shows', 'month'];
-  const ROTATE_INTERVAL_MS = 120000; // Auto Rotate set to 2 Minutes
+  const ROTATE_INTERVAL_MS = 120000; 
   
   let headers = [];
   let dateIndex = -1;
   let titleIndex = -1;
   let headerGroups = { staff: [], parking: [], audiolx: [], post: [] };
   
+  let lastDatesStringForDropdown = ""; 
+  
   function isHeaderMeta(h) {
     const lower = h.toLowerCase();
     if (lower.includes('access') && lower.includes('tech')) return false; 
     if (lower.includes('access')) return true; 
-    
     const metaKw = ['promot', 'rep', 'door', 'load'];
     return metaKw.some(kw => lower.includes(kw));
   }
@@ -641,6 +668,7 @@
         if (isInitialLoad) {
           findClosestFutureDateIndex();
         }
+        populateDropdown();
         renderActiveView();
       } else {
         document.getElementById('show-title-display').innerText = 'Sheet is empty';
@@ -648,6 +676,49 @@
     } catch (error) {
       document.getElementById('show-title-display').innerText = 'Connection Error';
     }
+  }
+
+  function populateDropdown() {
+    const currentDatesString = allShowsFlat.map(s => s.__dateKey + s[headers[titleIndex]]).join('|');
+    if (lastDatesStringForDropdown === currentDatesString) {
+      updateDropdownSelection();
+      return; 
+    }
+    lastDatesStringForDropdown = currentDatesString;
+    
+    const dropdown = document.getElementById('show-dropdown');
+    dropdown.innerHTML = '';
+    
+    dates.forEach((dateKey, dIdx) => {
+      showsByDate[dateKey].forEach((show, sIdx) => {
+        const title = show[headers[titleIndex]] || 'Unnamed Show';
+        const option = document.createElement('option');
+        option.value = `${dIdx}_${sIdx}`;
+        option.innerText = `${dateKey} | ${title}`;
+        dropdown.appendChild(option);
+      });
+    });
+    
+    updateDropdownSelection();
+  }
+
+  function updateDropdownSelection() {
+    const dropdown = document.getElementById('show-dropdown');
+    if (dropdown) {
+      dropdown.value = `${currentDateIndex}_${activeShowIndexOnDate}`;
+    }
+  }
+
+  function jumpToDropdownShow() {
+    const dropdown = document.getElementById('show-dropdown');
+    if (!dropdown.value) return;
+    
+    const parts = dropdown.value.split('_');
+    currentDateIndex = parseInt(parts[0], 10);
+    activeShowIndexOnDate = parseInt(parts[1], 10);
+    
+    resetTimerIfRunning();
+    renderCurrentDate();
   }
 
   function findClosestFutureDateIndex() {
@@ -742,14 +813,17 @@
     document.getElementById('view-month').style.display = 'none';
     document.getElementById(`view-${viewName}`).style.display = 'flex';
     
+    const navDropdown = document.getElementById('show-dropdown');
     const navToday = document.getElementById('nav-today');
     const navPrev = document.getElementById('nav-prev');
     const navNext = document.getElementById('nav-next');
     if (viewName === 'day') {
+      navDropdown.style.display = 'inline-block';
       navToday.style.display = 'inline-block';
       navPrev.style.display = 'inline-block';
       navNext.style.display = 'inline-block';
     } else {
+      navDropdown.style.display = 'none';
       navToday.style.display = 'none';
       navPrev.style.display = 'none';
       navNext.style.display = 'none';
@@ -817,8 +891,8 @@
           `);
         } else {
           html.push(`
-            <div style="background:rgba(0,0,0,0.25); padding:8px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.02); display:flex; flex-direction:column; align-items:flex-start; gap:3px;">
-              <span style="color:var(--text-muted); font-size:9.5px; text-transform:uppercase; font-weight:700; letter-spacing:0.5px;">${h}</span>
+            <div style="background:rgba(59, 130, 246, 0.12); padding:8px 12px; border-radius:6px; border:1px solid rgba(59, 130, 246, 0.25); display:flex; flex-direction:column; align-items:flex-start; gap:3px;">
+              <span style="color:#93c5fd; font-size:9.5px; text-transform:uppercase; font-weight:700; letter-spacing:0.5px;">${h}</span>
               <span style="font-weight:600; color:var(--text-main); font-size:14px;">${val}</span>
             </div>
           `);
@@ -1075,11 +1149,12 @@
     populatePanel('panel-audiolx', headerGroups.audiolx, activeShow);
     populatePanel('panel-parking', headerGroups.parking, activeShow);
     populatePanel('panel-post', headerGroups.post, activeShow);
+    
+    updateDropdownSelection();
   }
 
   fetchData(true);
   
-  // Background data refresh set to 10 seconds
   setInterval(() => fetchData(false), 10000); 
 </script>
 </body>
