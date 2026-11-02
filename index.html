@@ -470,18 +470,13 @@
     return lines;
   }
 
-  // --- SMART DATE PARSER FOR WRITTEN DATES ---
   function parseSheetDate(dateStr) {
     if (!dateStr || dateStr === 'Unscheduled') return new Date(NaN);
     
-    // 1. Strip Day of the Week (e.g. "Sunday", "Mon") and commas
     let cleaned = dateStr.replace(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tue|wed|thu|fri|sat)\b/gi, '').trim();
     cleaned = cleaned.replace(/,/g, '').trim();
-    
-    // 2. Strip ordinals from numbers (e.g. 1st -> 1, 22nd -> 22)
     cleaned = cleaned.replace(/\b(\d+)(st|nd|rd|th)\b/gi, '$1');
     
-    // 3. Ensure it has a year (if no 4 digit number is present, append current year)
     const hasYear = /\b(20\d{2})\b/.test(cleaned);
     if (!hasYear) {
       const currentYear = new Date().getFullYear();
@@ -490,7 +485,7 @@
 
     let parsed = new Date(cleaned);
     if (isNaN(parsed)) {
-      parsed = new Date(dateStr); // Absolute Fallback
+      parsed = new Date(dateStr); 
     }
     return parsed;
   }
@@ -543,7 +538,6 @@
         headers.forEach((h, idx) => { show[h] = r[idx] || ''; });
 
         show.__dateKey = dateKey;
-        // Parse the date properly for sorting and future comparison
         show.__parsedDate = parseSheetDate(dateKey);
 
         if (!showsByDate[dateKey]) showsByDate[dateKey] = [];
@@ -568,7 +562,6 @@
     }
   }
 
-  // Uses parsed dates to accurately jump to today or closest future show
   function findClosestFutureDateIndex() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -592,7 +585,7 @@
     });
 
     if (!foundFutureOrToday && dates.length > 0) {
-      closestIndex = dates.length - 1; // Fallback to last known show
+      closestIndex = dates.length - 1; 
     }
     currentDateIndex = closestIndex;
   }
@@ -644,7 +637,12 @@
 
   function getFieldValue(showObj, queryKeywords) {
     for (let kw of queryKeywords) {
-      const foundKey = Object.keys(showObj).find(k => k.toLowerCase().includes(kw));
+      const foundKey = Object.keys(showObj).find(k => {
+        const lower = k.toLowerCase();
+        // Strict ignore of "Tech" when searching for "Access" to prevent grabbing "Tech 3 / Access"
+        if (kw === 'access' && lower.includes('tech')) return false; 
+        return lower.includes(kw);
+      });
       if (foundKey && showObj[foundKey] && showObj[foundKey].trim() !== '' && showObj[foundKey] !== '-') {
         return showObj[foundKey];
       }
