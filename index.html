@@ -103,7 +103,7 @@
   .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: 1fr;
+    grid-template-rows: repeat(2, 1fr);
     gap: 20px;
     flex: 1;
     min-height: 0;
@@ -130,8 +130,9 @@
     padding: 15px;
     flex: 1;
     display: flex;
-    flex-direction: column;
-    gap: 15px;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 12px;
     overflow-y: auto;
   }
   .data-group {
@@ -142,7 +143,18 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
-    flex: 1;
+    flex: 1 1 calc(50% - 12px);
+    min-width: 130px;
+  }
+  .data-group.full-width {
+    flex: 1 1 100%;
+  }
+  .data-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
   }
   .data-value {
     font-size: 16px;
@@ -175,7 +187,33 @@
 
 <div id="main-content">
   <h1 id="show-title-display">Loading Show...</h1>
-  <div class="dashboard-grid" id="dynamic-grid"></div>
+  
+  <div class="dashboard-grid">
+    <div class="panel">
+      <div class="panel-header">1 &bull; Staff on the Day</div>
+      <div class="panel-content" id="panel-staff"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">2 &bull; Access, Load-In & Times</div>
+      <div class="panel-content" id="panel-times"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">3 &bull; Parking & Extra Notes</div>
+      <div class="panel-content" id="panel-parking"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">4 &bull; Risers Required</div>
+      <div class="panel-content" id="panel-risers"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">5 &bull; Audio & LX Requirements</div>
+      <div class="panel-content" id="panel-audiolx"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">6 &bull; Post-Show Setup Instructions</div>
+      <div class="panel-content" id="panel-post"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -185,9 +223,13 @@
   let dates = [];
   let currentDateIndex = 0;
   let activeShowIndexOnDate = 0;
+  
   let headers = [];
   let dateIndex = -1;
   let titleIndex = -1;
+
+  // Header Categories
+  let headerGroups = { staff: [], times: [], parking: [], risers: [], audiolx: [], post: [] };
 
   function parseCSV(text) {
     let lines = [];
@@ -213,6 +255,33 @@
     return lines;
   }
 
+  function groupHeaders() {
+    headerGroups = { staff: [], times: [], parking: [], risers: [], audiolx: [], post: [] };
+    
+    headers.forEach((h, idx) => {
+      if (idx === dateIndex || idx === titleIndex || !h.trim()) return;
+      const lower = h.toLowerCase();
+      
+      // Categorize headers based on keywords
+      if (lower.match(/staff|tech|crew|runner|cater|manager/)) {
+        headerGroups.staff.push(h);
+      } else if (lower.match(/access|load|door|curfew|time|support|stage/)) {
+        headerGroups.times.push(h);
+      } else if (lower.match(/park|bay|vehicle/)) {
+        headerGroups.parking.push(h);
+      } else if (lower.match(/riser|drum|foh/)) {
+        headerGroups.risers.push(h);
+      } else if (lower.match(/audio|sound|lx|light|sfx|desk/)) {
+        headerGroups.audiolx.push(h);
+      } else if (lower.match(/post|turnaround|end|night/)) {
+        headerGroups.post.push(h);
+      } else {
+        // Fallback for unmatched columns
+        headerGroups.parking.push(h); 
+      }
+    });
+  }
+
   async function fetchData() {
     try {
       const response = await fetch(CSV_URL);
@@ -222,13 +291,13 @@
 
       headers = rows[0];
       
-      // Find Date and Show Name to exclude them from the panels and use them in the header
       dateIndex = headers.findIndex(h => h.toLowerCase().includes('date'));
       titleIndex = headers.findIndex(h => h.toLowerCase().includes('show') && !h.toLowerCase().includes('post'));
       
       if (dateIndex === -1) dateIndex = 0;
       if (titleIndex === -1) titleIndex = 1;
 
+      groupHeaders();
       showsByDate = {};
       let loadedCount = 0;
       
@@ -239,9 +308,7 @@
         const dateKey = r[dateIndex] || 'Unscheduled';
         
         let show = {};
-        headers.forEach((h, idx) => {
-          show[h] = r[idx] || '';
-        });
+        headers.forEach((h, idx) => { show[h] = r[idx] || ''; });
 
         if (!showsByDate[dateKey]) showsByDate[dateKey] = [];
         showsByDate[dateKey].push(show);
@@ -251,11 +318,8 @@
       dates = Object.keys(showsByDate);
       document.getElementById('loaded-status').innerText = `Loaded (${loadedCount} Shows)`;
       
-      if (dates.length > 0) {
-        renderCurrentDate();
-      } else {
-        document.getElementById('show-title-display').innerText = 'Sheet is empty';
-      }
+      if (dates.length > 0) renderCurrentDate();
+      else document.getElementById('show-title-display').innerText = 'Sheet is empty';
     } catch (error) {
       document.getElementById('show-title-display').innerText = 'Connection Error';
     }
@@ -274,8 +338,29 @@
     renderCurrentDate();
   }
 
-  function formatVal(val) {
-    return (val && val.trim() !== '' && val !== '-') ? val : '<span class="empty-val">—</span>';
+  function populatePanel(panelId, groupKeys, activeShow) {
+    const container = document.getElementById(panelId);
+    container.innerHTML = '';
+    
+    if (groupKeys.length === 0) {
+      container.innerHTML = `<div class="data-group full-width"><div class="data-value empty-val">No columns matched</div></div>`;
+      return;
+    }
+    
+    groupKeys.forEach(h => {
+      const val = activeShow[h];
+      const displayVal = (val && val.trim() !== '' && val !== '-') ? val : '<span class="empty-val">—</span>';
+      
+      // Make long items take full width (like Post Show or Notes)
+      const isFullWidth = (panelId === 'panel-post' || panelId === 'panel-parking');
+      
+      container.innerHTML += `
+        <div class="data-group ${isFullWidth ? 'full-width' : ''}">
+          <div class="data-label">${h}</div>
+          <div class="data-value">${displayVal}</div>
+        </div>
+      `;
+    });
   }
 
   function renderCurrentDate() {
@@ -305,29 +390,13 @@
     const activeShow = shows[activeShowIndexOnDate];
     document.getElementById('show-title-display').innerText = activeShow[headers[titleIndex]] || 'Unnamed Show';
 
-    // Dynamically generate grid panels for all other columns
-    const grid = document.getElementById('dynamic-grid');
-    grid.innerHTML = '';
-    
-    let panelCount = 1;
-    headers.forEach((h, idx) => {
-      // Skip the designated Date and Title columns
-      if (idx === dateIndex || idx === titleIndex) return;
-      if (!h.trim()) return; // Skip completely empty header columns
-
-      const panel = document.createElement('div');
-      panel.className = 'panel';
-      panel.innerHTML = `
-        <div class="panel-header">${panelCount} &bull; ${h}</div>
-        <div class="panel-content">
-          <div class="data-group">
-            <div class="data-value">${formatVal(activeShow[h])}</div>
-          </div>
-        </div>
-      `;
-      grid.appendChild(panel);
-      panelCount++;
-    });
+    // Populate grouped panels using Row 1 text
+    populatePanel('panel-staff', headerGroups.staff, activeShow);
+    populatePanel('panel-times', headerGroups.times, activeShow);
+    populatePanel('panel-parking', headerGroups.parking, activeShow);
+    populatePanel('panel-risers', headerGroups.risers, activeShow);
+    populatePanel('panel-audiolx', headerGroups.audiolx, activeShow);
+    populatePanel('panel-post', headerGroups.post, activeShow);
   }
 
   fetchData();
