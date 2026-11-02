@@ -89,61 +89,74 @@
     padding: 15px 20px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
     overflow: hidden;
   }
   
-  /* New Header Layout */
+  /* Dynamic Header Layout */
   #show-header-area {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: flex-start;
+    gap: 20px;
     padding: 0 5px;
   }
   #show-title-display {
-    font-size: 34px;
+    flex: 1;
+    font-size: clamp(28px, 4vw, 42px);
     font-weight: 900;
     margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.1;
     color: var(--text-main);
   }
+  
+  /* Expanded Meta Area (Top Right) */
   #show-meta-area {
+    flex: 1.8;
     display: flex;
-    gap: 15px;
-    background: #0d0f16;
-    border: 1px solid #1f2937;
-    padding: 8px 15px;
-    border-radius: 8px;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
   }
   .meta-item {
+    background: rgba(13, 15, 22, 0.8);
+    border: 1px solid #374151;
+    padding: 6px 12px;
+    border-radius: 6px;
     display: flex;
     flex-direction: column;
     gap: 2px;
   }
   .meta-label {
-    font-size: 9px;
+    font-size: 8px;
     color: var(--accent-blue);
     text-transform: uppercase;
     font-weight: 700;
     letter-spacing: 1px;
   }
   .meta-value {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--text-main);
+    white-space: nowrap;
   }
 
-  /* Dashboard Grid */
+  /* Asymmetrical Dashboard Grid */
   .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: 1fr 1.5fr; /* Audio/LX side is 50% wider */
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto;
     gap: 15px;
     flex: 1;
     min-height: 0;
   }
+  
+  /* Assigning Grid Areas */
+  .panel-staff { grid-column: 1; grid-row: 1; }
+  .panel-parking { grid-column: 1; grid-row: 2; }
+  .panel-audio { grid-column: 2; grid-row: 1 / span 2; } /* Spans entire right height */
+  .panel-post { grid-column: 1 / span 2; grid-row: 3; } /* Spans entire bottom width */
+
   .panel {
     background: var(--bg-panel);
     border: 1px solid var(--border-color);
@@ -162,29 +175,33 @@
     letter-spacing: 1px;
     border-bottom: 1px solid var(--border-color);
   }
+  
+  /* Fluid wrapping content areas */
   .panel-content {
-    padding: 10px;
+    padding: 12px;
     flex: 1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-wrap: wrap;
     align-content: flex-start;
-    gap: 8px;
-    overflow: hidden; /* Disabled scrolling */
+    gap: 10px;
+    overflow-y: auto;
+    scrollbar-width: none; /* Hide scrollbar Firefox */
   }
-  .panel-content.single-col {
-    grid-template-columns: 1fr;
-  }
+  .panel-content::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome/Safari */
+  
   .data-group {
-    background: #0d0f16;
-    border: 1px solid #1f2937;
+    background: rgba(13, 15, 22, 0.5);
+    border: 1px solid rgba(31, 41, 55, 0.6);
     border-radius: 6px;
-    padding: 8px;
+    padding: 8px 12px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
+    flex: 1 1 calc(50% - 10px);
+    min-width: 130px;
   }
   .full-width {
-    grid-column: 1 / -1;
+    flex: 1 1 100%;
   }
   .data-label {
     font-size: 8px;
@@ -194,12 +211,12 @@
     font-weight: 600;
   }
   .data-value {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--text-main);
     word-wrap: break-word;
     white-space: pre-wrap;
-    line-height: 1.2;
+    line-height: 1.3;
   }
   .empty-val { color: #4b5563; font-weight: 400; }
 </style>
@@ -226,45 +243,29 @@
   <div id="show-header-area">
     <h1 id="show-title-display">Loading Show...</h1>
     <div id="show-meta-area">
-      <div class="meta-item">
-        <span class="meta-label">Date</span>
-        <span class="meta-value" id="meta-date">-</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">Promotor</span>
-        <span class="meta-value" id="meta-promotor">-</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">Rep</span>
-        <span class="meta-value" id="meta-rep">-</span>
-      </div>
+      <!-- Meta badges will be injected here dynamically -->
     </div>
   </div>
   
   <div class="dashboard-grid">
-    <div class="panel">
-      <div class="panel-header">1 &bull; Staff on the Day</div>
+    <div class="panel panel-staff">
+      <div class="panel-header">Staff on the Day</div>
       <div class="panel-content" id="panel-staff"></div>
     </div>
-    <div class="panel">
-      <div class="panel-header">2 &bull; Access, Load-In & Times</div>
-      <div class="panel-content" id="panel-access"></div>
-    </div>
-    <div class="panel">
-      <div class="panel-header">3 &bull; Parking, Admin & Extra Notes</div>
-      <div class="panel-content" id="panel-parking"></div>
-    </div>
-    <div class="panel">
-      <div class="panel-header">4 &bull; Risers Required</div>
-      <div class="panel-content" id="panel-risers"></div>
-    </div>
-    <div class="panel">
-      <div class="panel-header">5 &bull; Audio & LX Requirements</div>
+    
+    <div class="panel panel-audio">
+      <div class="panel-header">Audio, LX & Risers Requirements</div>
       <div class="panel-content" id="panel-audiolx"></div>
     </div>
-    <div class="panel">
-      <div class="panel-header">6 &bull; Post-Show Setup Instructions</div>
-      <div class="panel-content single-col" id="panel-post"></div>
+
+    <div class="panel panel-parking">
+      <div class="panel-header">Parking, Admin & Extra Notes</div>
+      <div class="panel-content" id="panel-parking"></div>
+    </div>
+    
+    <div class="panel panel-post">
+      <div class="panel-header">Post-Show Setup Instructions</div>
+      <div class="panel-content" id="panel-post"></div>
     </div>
   </div>
 </div>
@@ -280,7 +281,11 @@
   let headers = [];
   let dateIndex = -1;
   let titleIndex = -1;
-  let headerGroups = { staff: [], access: [], parking: [], risers: [], audiolx: [], post: [] };
+  
+  let headerGroups = { staff: [], parking: [], audiolx: [], post: [] };
+  
+  // Exact keywords for items that should move to the top right meta area
+  const metaKeywords = ['promot', 'rep', 'door', 'access', 'load', 'fire cert', 'show stop', 'foh riser', 'accreditation'];
 
   function parseCSV(text) {
     let lines = [];
@@ -307,26 +312,22 @@
   }
 
   function groupHeadersByKeyword() {
-    headerGroups = { staff: [], access: [], parking: [], risers: [], audiolx: [], post: [] };
+    headerGroups = { staff: [], parking: [], audiolx: [], post: [] };
     
     headers.forEach((h, idx) => {
       if (idx === dateIndex || idx === titleIndex || !h.trim()) return;
       const lower = h.toLowerCase();
       
-      // Exclude Promotor and Rep from the grid (they are moved to the top right header)
-      if (lower.includes('promotor') || lower.includes('promoter') || lower === 'rep' || lower.startsWith('rep ')) {
-        return;
-      }
+      // If header contains a meta keyword, skip grouping it into panels
+      const isMetaField = metaKeywords.some(kw => lower.includes(kw));
+      if (isMetaField) return;
       
+      // Grouping the remaining headers
       if (lower.match(/post|setup|night/)) {
         headerGroups.post.push(h);
       } else if (lower.match(/tech|crew|runner|manager|staff/)) {
         headerGroups.staff.push(h);
-      } else if (lower.match(/access|load|door|curfew|time|support/)) {
-        headerGroups.access.push(h);
-      } else if (lower.match(/riser/)) {
-        headerGroups.risers.push(h);
-      } else if (lower.match(/audio|lx|light|power|sfx/)) {
+      } else if (lower.match(/audio|lx|light|power|sfx|riser|drum/)) {
         headerGroups.audiolx.push(h);
       } else {
         headerGroups.parking.push(h); 
@@ -393,13 +394,15 @@
     container.innerHTML = '';
     
     if (groupKeys.length === 0) {
-      container.innerHTML = `<div class="data-group full-width"><div class="data-value empty-val">No data</div></div>`;
+      container.innerHTML = `<div class="data-group full-width"><div class="data-value empty-val">No data found in sheet</div></div>`;
       return;
     }
     
     groupKeys.forEach(h => {
       const val = activeShow[h];
       const displayVal = (val && val.trim() !== '' && val !== '-') ? val : '<span class="empty-val">—</span>';
+      
+      // Make longer text fields stretch across the grid
       const isFullWidth = (h.toLowerCase().includes('note') || h.toLowerCase().includes('setup') || panelId === 'panel-post');
       
       container.innerHTML += `
@@ -411,10 +414,14 @@
     });
   }
 
-  function getCleanValue(obj, keyword) {
-    const key = headers.find(h => h.toLowerCase().includes(keyword));
-    const val = key ? obj[key] : '';
-    return (val && val.trim() !== '' && val !== '-') ? val : '—';
+  function createMetaBadge(label, value) {
+    const displayVal = (value && value.trim() !== '' && value !== '-') ? value : '<span class="empty-val">—</span>';
+    return `
+      <div class="meta-item">
+        <span class="meta-label">${label}</span>
+        <span class="meta-value">${displayVal}</span>
+      </div>
+    `;
   }
 
   function renderCurrentDate() {
@@ -425,6 +432,7 @@
     const banner = document.getElementById('double-show-banner');
     const selectorContainer = document.getElementById('show-selector-buttons');
     
+    // Handle Double Shows
     if (shows.length > 1) {
       banner.style.display = 'flex';
       selectorContainer.innerHTML = '';
@@ -443,16 +451,23 @@
     const activeShow = shows[activeShowIndexOnDate];
     document.getElementById('show-title-display').innerText = activeShow[headers[titleIndex]] || 'Unnamed Show';
     
-    // Inject Meta Variables (Date, Promotor, Rep)
-    document.getElementById('meta-date').innerText = currentDate;
-    document.getElementById('meta-promotor').innerText = getCleanValue(activeShow, 'promot');
-    document.getElementById('meta-rep').innerText = getCleanValue(activeShow, 'rep');
+    // Construct Top Right Meta Variables 
+    const metaContainer = document.getElementById('show-meta-area');
+    metaContainer.innerHTML = createMetaBadge('Date', currentDate); // Always render Date first
+    
+    const matchedMetaHeaders = new Set();
+    metaKeywords.forEach(kw => {
+      // Find exact header matching keyword to prevent duplicates and ensure correct title
+      const matchedHeader = headers.find(h => h.toLowerCase().includes(kw));
+      if (matchedHeader && !matchedMetaHeaders.has(matchedHeader)) {
+        matchedMetaHeaders.add(matchedHeader);
+        metaContainer.innerHTML += createMetaBadge(matchedHeader, activeShow[matchedHeader]);
+      }
+    });
 
-    // Populate panels
+    // Populate Lower Grid Panels
     populatePanel('panel-staff', headerGroups.staff, activeShow);
-    populatePanel('panel-access', headerGroups.access, activeShow);
     populatePanel('panel-parking', headerGroups.parking, activeShow);
-    populatePanel('panel-risers', headerGroups.risers, activeShow);
     populatePanel('panel-audiolx', headerGroups.audiolx, activeShow);
     populatePanel('panel-post', headerGroups.post, activeShow);
   }
