@@ -434,7 +434,6 @@
   </div>
 
   <div class="nav-controls">
-    <!-- View Switchers -->
     <button id="btn-view-day" class="active-btn" onclick="switchView('day')">1 &bull; Day</button>
     <button id="btn-view-3shows" onclick="switchView('3shows')">3 &bull; Shows</button>
     <button id="btn-view-month" onclick="switchView('month')">1 &bull; Month</button>
@@ -855,12 +854,10 @@
     upcomingShows.forEach(show => {
       const title = show[headers[titleIndex]] || 'Unnamed Show';
       const date = show.__dateKey;
-      
       const promotor = getFieldValue(show, ['promot']);
       const access = getFieldValue(show, ['access']);
       const loadIn = getFieldValue(show, ['load']);
       const staffing = getStaffingHTML(show, false, 'column');
-      
       const audio = getFieldValue(show, ['audio'], ['power']);
       const lx = getFieldValue(show, ['light', 'sfx', 'lx'], ['power']);
 
@@ -874,10 +871,19 @@
           <div class="overview-card-date">${date}</div>
           <div class="overview-card-title">${title}</div>
           
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div class="data-group tint-green"><div class="data-label">Promotor</div><div class="data-value">${promotor}</div></div>
-            <div class="data-group tint-green"><div class="data-label">Access</div><div class="data-value">${access}</div></div>
-            <div class="data-group span-2 tint-green" style="grid-column: span 2;"><div class="data-label">Load In</div><div class="data-value">${loadIn}</div></div>
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+            <div class="data-group tint-green" style="padding: 8px 10px; min-width: 0;">
+              <div class="data-label" style="font-size: 9px; margin-bottom: 2px;">Promotor</div>
+              <div class="data-value" style="font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${promotor}</div>
+            </div>
+            <div class="data-group tint-green" style="padding: 8px 10px; min-width: 0;">
+              <div class="data-label" style="font-size: 9px; margin-bottom: 2px;">Access</div>
+              <div class="data-value" style="font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${access}</div>
+            </div>
+            <div class="data-group tint-green" style="padding: 8px 10px; min-width: 0;">
+              <div class="data-label" style="font-size: 9px; margin-bottom: 2px;">Load In</div>
+              <div class="data-value" style="font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${loadIn}</div>
+            </div>
           </div>
           
           <div style="display:flex; gap: 8px;">
