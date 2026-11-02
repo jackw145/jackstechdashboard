@@ -33,10 +33,10 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 6px 20px;
+    padding: 8px 20px;
     background-color: #11141e;
     border-bottom: 1px solid var(--border-color);
-    height: 45px;
+    height: 50px;
   }
   .nav-title {
     font-size: 14px;
@@ -51,15 +51,15 @@
     display: none;
     background: rgba(139, 92, 246, 0.15);
     border: 1px solid rgba(139, 92, 246, 0.3);
-    padding: 3px 12px;
+    padding: 4px 14px;
     border-radius: 6px;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
   }
   .banner-text {
     color: var(--accent-purple);
     font-weight: 700;
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 1px;
     text-transform: uppercase;
   }
@@ -67,18 +67,18 @@
 
   .nav-controls {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     align-items: center;
   }
   button {
     background: #1f2937;
     color: white;
     border: 1px solid var(--border-color);
-    padding: 4px 10px;
+    padding: 6px 14px;
     border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 11px;
+    font-size: 12px;
     transition: background 0.2s;
   }
   button:hover:not(:disabled) { background: #374151; }
@@ -87,10 +87,10 @@
   
   #main-content {
     flex: 1;
-    padding: 12px 20px;
+    padding: 16px 24px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
     overflow: hidden;
   }
   
@@ -105,7 +105,7 @@
   #show-title-display {
     flex: 0 0 auto;
     max-width: 35%;
-    font-size: clamp(24px, 3.5vw, 36px);
+    font-size: clamp(28px, 4vw, 42px);
     font-weight: 900;
     margin: 0;
     line-height: 1.1;
@@ -117,27 +117,27 @@
     flex: 1 1 auto;
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: 8px;
     justify-content: flex-end;
   }
   .meta-item {
     background: rgba(13, 15, 22, 0.8);
     border: 1px solid #374151;
-    padding: 4px 8px;
-    border-radius: 6px;
+    padding: 5px 12px;
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
   }
   .meta-label {
-    font-size: 7.5px;
+    font-size: 8px;
     color: var(--accent-blue);
     text-transform: uppercase;
     font-weight: 700;
     letter-spacing: 1px;
   }
   .meta-value {
-    font-size: 11.5px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--text-main);
     white-space: nowrap;
@@ -146,14 +146,14 @@
   /* Independent Vertical Columns */
   .dashboard-columns {
     display: flex;
-    gap: 15px;
+    gap: 20px;
     flex: 1;
     min-height: 0;
   }
   .column {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
     flex: 1;
     min-width: 0;
   }
@@ -161,7 +161,7 @@
   .panel {
     background: var(--bg-panel);
     border: 1px solid var(--border-color);
-    border-radius: 10px;
+    border-radius: 12px;
     display: flex;
     flex-direction: column;
     overflow: hidden; 
@@ -172,8 +172,8 @@
 
   .panel-header {
     background: var(--bg-panel-header);
-    padding: 5px 12px;
-    font-size: 9.5px;
+    padding: 8px 14px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--accent-blue);
     text-transform: uppercase;
@@ -181,14 +181,14 @@
     border-bottom: 1px solid var(--border-color);
   }
   
-  /* Fluid wrapping content areas - ZERO scrolling */
+  /* Fluid wrapping content areas - Stretches to fill empty space! */
   .panel-content {
-    padding: 8px 10px;
+    padding: 10px 12px;
     flex: 1;
     display: flex;
     flex-wrap: wrap;
-    align-content: flex-start;
-    gap: 6px;
+    /* align-content removed so rows automatically stretch vertically to fill the panel */
+    gap: 8px;
     overflow: hidden; 
   }
   
@@ -196,36 +196,37 @@
   .data-group {
     background: rgba(13, 15, 22, 0.5);
     border: 1px solid rgba(31, 41, 55, 0.6);
-    border-radius: 6px;
-    padding: clamp(3px, 0.8vh, 5px) 8px;
+    border-radius: 8px;
+    padding: clamp(6px, 1.2vh, 10px) 12px;
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    justify-content: center; /* Vertically centers text when the box stretches */
+    gap: 2px;
   }
   
-  /* w-auto: Squeezes tight so many items fit on one line (used for Staff) */
-  .w-auto { flex: 1 1 12%; min-width: 70px; }
+  /* w-auto: Squeezes tight so many items fit on one line */
+  .w-auto { flex: 1 1 12%; min-width: 80px; }
   
-  /* w-half: Forces exactly 2 items per line (used for Parking, Power) */
-  .w-half { flex: 1 1 calc(50% - 6px); min-width: 120px; }
+  /* w-half: Forces exactly 2 items per line */
+  .w-half { flex: 1 1 calc(50% - 8px); min-width: 140px; }
   
-  /* w-full: Takes up entire width (used for Notes, Post-Show) */
+  /* w-full: Takes up entire width */
   .w-full { flex: 1 1 100%; }
 
   .data-label {
-    font-size: clamp(6.5px, 1vh, 8px);
+    font-size: clamp(8px, 1.2vh, 10px);
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
   }
   .data-value {
-    font-size: clamp(10px, 1.5vh, 12px);
+    font-size: clamp(12px, 1.8vh, 16px);
     font-weight: 600;
     color: var(--text-main);
     word-wrap: break-word;
     white-space: pre-wrap;
-    line-height: 1.15;
+    line-height: 1.2;
   }
   .empty-val { color: #4b5563; font-weight: 400; }
 </style>
@@ -234,8 +235,8 @@
 
 <div id="top-nav">
   <div class="nav-title">
-    <span style="background: var(--accent-blue); padding: 3px 6px; border-radius: 4px; color: white; font-size: 11px;">TECH DASHBOARD</span>
-    <span id="loaded-status" style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Loading data...</span>
+    <span style="background: var(--accent-blue); padding: 4px 8px; border-radius: 4px; color: white; font-size: 12px;">TECH DASHBOARD</span>
+    <span id="loaded-status" style="font-size: 12px; color: var(--text-muted); font-weight: normal;">Loading data...</span>
   </div>
   
   <div id="double-show-container">
@@ -273,7 +274,7 @@
     <!-- RIGHT COLUMN -->
     <div class="column">
       <div class="panel panel-flexible">
-        <div class="panel-header">2 &bull; Audio, LX & Risers Requirements</div>
+        <div class="panel-header">2 &bull; Audio, LX, Risers & Supports</div>
         <div class="panel-content" id="panel-audiolx"></div>
       </div>
       <div class="panel panel-tight">
@@ -342,7 +343,8 @@
         headerGroups.post.push(h);
       } else if (lower.match(/tech|crew|runner|manager|staff/)) {
         headerGroups.staff.push(h);
-      } else if (lower.match(/audio|lx|light|power|sfx|riser|drum/)) {
+      } else if (lower.match(/audio|lx|light|power|sfx|riser|drum|support/)) {
+        // "support" added above to group it securely in Audio/LX
         headerGroups.audiolx.push(h);
       } else {
         headerGroups.parking.push(h); 
@@ -418,15 +420,14 @@
       const displayVal = (val && val.trim() !== '' && val !== '-') ? val : '<span class="empty-val">—</span>';
       
       const lower = h.toLowerCase();
-      let widthClass = 'w-half'; // Default sets things 2 items per line (good for Audio/LX defaults)
+      let widthClass = 'w-half'; 
       
-      // Determine explicit sizes based on your requirements
       if (lower.includes('note') || lower.includes('setup') || panelId === 'panel-post') {
         widthClass = 'w-full';
       } else if (panelId === 'panel-staff') {
-        widthClass = 'w-auto'; // Shove all staff items side-by-side onto 1 line
-      } else if (lower.includes('power') || lower.includes('parking') || lower.includes('code')) {
-        widthClass = 'w-half'; // Force Power and Parking to sit exactly 50/50 alongside each other
+        widthClass = 'w-auto'; 
+      } else if (lower.includes('power') || lower.includes('parking') || lower.includes('code') || lower.includes('support')) {
+        widthClass = 'w-half'; 
       }
       
       container.innerHTML += `
