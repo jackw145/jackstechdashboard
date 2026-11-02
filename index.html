@@ -181,52 +181,54 @@
     border-bottom: 1px solid var(--border-color);
   }
   
-  /* Fluid wrapping content areas - Stretches to fill empty space! */
+  /* Fluid wrapping content areas - Hidden scrollbar fallback */
   .panel-content {
-    padding: 10px 12px;
+    padding: 12px;
     flex: 1;
     display: flex;
     flex-wrap: wrap;
-    /* align-content removed so rows automatically stretch vertically to fill the panel */
+    align-content: flex-start;
     gap: 8px;
-    overflow: hidden; 
+    overflow-y: auto; 
+    scrollbar-width: none;
   }
+  .panel-content::-webkit-scrollbar { display: none; }
   
   /* --- Width Utility Classes for Data Groups --- */
   .data-group {
     background: rgba(13, 15, 22, 0.5);
     border: 1px solid rgba(31, 41, 55, 0.6);
     border-radius: 8px;
-    padding: clamp(6px, 1.2vh, 10px) 12px;
+    padding: clamp(6px, 1vh, 8px) 12px;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Vertically centers text when the box stretches */
+    justify-content: flex-start;
     gap: 2px;
   }
   
-  /* w-auto: Squeezes tight so many items fit on one line */
-  .w-auto { flex: 1 1 12%; min-width: 80px; }
+  /* w-third: 3 items per line (Perfect for Staff) */
+  .w-third { flex: 1 1 calc(33.333% - 8px); min-width: 90px; }
   
-  /* w-half: Forces exactly 2 items per line */
+  /* w-half: 2 items per line (Perfect for Pairs: Parking, Towels, Power) */
   .w-half { flex: 1 1 calc(50% - 8px); min-width: 140px; }
   
-  /* w-full: Takes up entire width */
-  .w-full { flex: 1 1 100%; }
+  /* w-full: Full width (Perfect for Notes & Requirements) */
+  .w-full { flex: 1 1 100%; min-width: 100%; }
 
   .data-label {
-    font-size: clamp(8px, 1.2vh, 10px);
+    font-size: clamp(8px, 1vh, 9px);
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
   }
   .data-value {
-    font-size: clamp(12px, 1.8vh, 16px);
+    font-size: clamp(12px, 1.6vh, 15px);
     font-weight: 600;
     color: var(--text-main);
     word-wrap: break-word;
     white-space: pre-wrap;
-    line-height: 1.2;
+    line-height: 1.25;
   }
   .empty-val { color: #4b5563; font-weight: 400; }
 </style>
@@ -344,7 +346,6 @@
       } else if (lower.match(/tech|crew|runner|manager|staff/)) {
         headerGroups.staff.push(h);
       } else if (lower.match(/audio|lx|light|power|sfx|riser|drum|support/)) {
-        // "support" added above to group it securely in Audio/LX
         headerGroups.audiolx.push(h);
       } else {
         headerGroups.parking.push(h); 
@@ -420,14 +421,15 @@
       const displayVal = (val && val.trim() !== '' && val !== '-') ? val : '<span class="empty-val">—</span>';
       
       const lower = h.toLowerCase();
-      let widthClass = 'w-half'; 
+      let widthClass = 'w-full'; 
       
-      if (lower.includes('note') || lower.includes('setup') || panelId === 'panel-post') {
-        widthClass = 'w-full';
-      } else if (panelId === 'panel-staff') {
-        widthClass = 'w-auto'; 
-      } else if (lower.includes('power') || lower.includes('parking') || lower.includes('code') || lower.includes('support')) {
-        widthClass = 'w-half'; 
+      // Assign grid sizing logic based on specific pairs and groups
+      if (panelId === 'panel-staff') {
+        widthClass = 'w-third'; // 3 items per line
+      } else if (lower.includes('power') || lower.includes('parking') || lower.includes('code') || lower.includes('towel') || lower.includes('support')) {
+        widthClass = 'w-half'; // 2 items per line side-by-side
+      } else {
+        widthClass = 'w-full'; // Descriptions, Notes, Setup take full width
       }
       
       container.innerHTML += `
