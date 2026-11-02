@@ -101,7 +101,7 @@
     align-items: center;
     gap: 15px;
     padding: 0;
-    flex-wrap: nowrap; /* Strict single line */
+    flex-wrap: nowrap;
   }
   #show-title-display {
     flex: 0 0 auto;
@@ -120,7 +120,7 @@
   #show-meta-area {
     flex: 1 1 auto;
     display: flex;
-    flex-wrap: nowrap; /* Strict single line forced */
+    flex-wrap: nowrap;
     gap: 6px;
     justify-content: flex-end;
     align-items: center;
@@ -134,7 +134,7 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    white-space: nowrap; /* Keep inner text on one line */
+    white-space: nowrap;
   }
   .meta-label {
     font-size: clamp(8px, 1vh, 9px);
@@ -186,18 +186,18 @@
     border-bottom: 1px solid var(--border-color);
   }
   
-  /* --- Strict Grid System --- */
+  /* Strict Grid System */
   .panel-grid-layout {
     padding: 10px;
     flex: 1;
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Exactly 2 columns */
+    grid-template-columns: 1fr 1fr;
     align-content: flex-start;
-    gap: 8px; /* Tighter gap */
+    gap: 8px;
     overflow: hidden; 
   }
   
-  /* --- Strict Flex Row for Staff --- */
+  /* Strict Flex Row for Staff */
   .panel-staff-row {
     padding: 10px;
     flex: 1;
@@ -221,9 +221,8 @@
   }
   
   /* Grid sizing classes */
-  .span-1 { grid-column: span 1; } /* Sits side-by-side */
-  .span-2 { grid-column: span 2; } /* Full width */
-  
+  .span-1 { grid-column: span 1; }
+  .span-2 { grid-column: span 2; }
   .staff-item { flex: 1; } 
 
   .data-label {
@@ -425,33 +424,52 @@
       return;
     }
 
-    let fullWidthItems = [];
-    let halfWidthItems = [];
+    // STRICT CUSTOM SORTING LOGIC
+    function getSortRank(h) {
+      const lower = h.toLowerCase().trim();
+      
+      if (panelId === 'panel-parking') {
+        if (lower === 'parking' || (lower.includes('parking') && !lower.includes('code'))) return 1;
+        if (lower.includes('parking code')) return 2;
+        if (lower.includes('stage time')) return 3;
+        if (lower.includes('stage towel')) return 4;
+        if (lower.includes('bath towel')) return 5;
+        if (lower.includes('note')) return 6;
+        if (lower.includes('hire')) return 7;
+      } 
+      
+      else if (panelId === 'panel-audiolx') {
+        if (lower === 'audio' || (lower.includes('audio') && !lower.includes('power'))) return 1;
+        if (lower.includes('light') || lower.includes('sfx') || (lower.includes('lx') && !lower.includes('power'))) return 2;
+        if (lower.includes('audio power')) return 3;
+        if (lower.includes('lx power')) return 4;
+        if (lower.includes('riser')) return 5;
+        if (lower.includes('support')) return 6;
+      }
+      return 99;
+    }
+
+    // Sort headers based on designated rankings
+    groupKeys.sort((a, b) => getSortRank(a) - getSortRank(b));
+    
+    // Exact list of pairs that must be half-width (span-1)
     const halfWidthMatches = ['parking', 'parking code', 'lx power', 'audio power', 'stage towels', 'bath towels'];
     
     groupKeys.forEach(h => {
-      const lower = h.toLowerCase().trim();
-      
-      if (panelId === 'panel-staff') {
-        fullWidthItems.push({ key: h, class: 'staff-item' });
-      } else {
-        if (halfWidthMatches.some(kw => lower.includes(kw))) {
-          halfWidthItems.push({ key: h, class: 'span-1' });
-        } else {
-          fullWidthItems.push({ key: h, class: 'span-2' });
-        }
-      }
-    });
-
-    const sortedItems = [...fullWidthItems, ...halfWidthItems];
-    
-    sortedItems.forEach(item => {
-      const h = item.key;
       const val = activeShow[h];
       const displayVal = (val && val.trim() !== '' && val !== '-') ? val : '<span class="empty-val">—</span>';
+      const lower = h.toLowerCase().trim();
+      
+      let cssClass = 'span-2'; 
+      
+      if (panelId === 'panel-staff') {
+        cssClass = 'staff-item';
+      } else if (halfWidthMatches.some(kw => lower.includes(kw))) {
+        cssClass = 'span-1';
+      }
       
       container.innerHTML += `
-        <div class="data-group ${item.class}">
+        <div class="data-group ${cssClass}">
           <div class="data-label">${h}</div>
           <div class="data-value">${displayVal}</div>
         </div>
