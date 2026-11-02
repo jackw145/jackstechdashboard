@@ -33,13 +33,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 20px;
+    padding: 6px 20px;
     background-color: #11141e;
     border-bottom: 1px solid var(--border-color);
-    height: 45px;
+    height: 40px;
   }
   .nav-title {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 800;
     letter-spacing: 1px;
     display: flex;
@@ -55,11 +55,11 @@
     background: #1f2937;
     color: white;
     border: 1px solid var(--border-color);
-    padding: 6px 14px;
+    padding: 5px 12px;
     border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 12px;
     transition: background 0.2s;
   }
   button:hover:not(:disabled) { background: #374151; }
@@ -71,7 +71,7 @@
     background: rgba(139, 92, 246, 0.15);
     border: 1px solid rgba(139, 92, 246, 0.3);
     margin: 10px 20px 0;
-    padding: 8px 15px;
+    padding: 6px 15px;
     border-radius: 6px;
     align-items: center;
     justify-content: space-between;
@@ -89,7 +89,7 @@
     padding: 15px 20px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
     overflow: hidden;
   }
   
@@ -102,8 +102,9 @@
     padding: 0 5px;
   }
   #show-title-display {
-    flex: 1;
-    font-size: clamp(28px, 4vw, 42px);
+    flex: 0 0 auto;
+    max-width: 35%;
+    font-size: clamp(24px, 3.5vw, 36px);
     font-weight: 900;
     margin: 0;
     line-height: 1.1;
@@ -112,50 +113,44 @@
   
   /* Expanded Meta Area (Top Right) */
   #show-meta-area {
-    flex: 1.8;
+    flex: 1 1 auto;
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
     justify-content: flex-end;
   }
   .meta-item {
     background: rgba(13, 15, 22, 0.8);
     border: 1px solid #374151;
-    padding: 6px 12px;
+    padding: 5px 10px;
     border-radius: 6px;
     display: flex;
     flex-direction: column;
     gap: 2px;
   }
   .meta-label {
-    font-size: 8px;
+    font-size: 7.5px;
     color: var(--accent-blue);
     text-transform: uppercase;
     font-weight: 700;
     letter-spacing: 1px;
   }
   .meta-value {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-main);
     white-space: nowrap;
   }
 
-  /* Asymmetrical Dashboard Grid */
+  /* Symmetrical 2x2 Grid - No Scrolling Allowed */
   .dashboard-grid {
     display: grid;
-    grid-template-columns: 1fr 1.5fr; /* Audio/LX side is 50% wider */
-    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto;
+    grid-template-columns: 1fr 1fr; 
+    grid-template-rows: 1fr 1fr;
     gap: 15px;
     flex: 1;
-    min-height: 0;
+    min-height: 0; 
   }
-  
-  /* Assigning Grid Areas */
-  .panel-staff { grid-column: 1; grid-row: 1; }
-  .panel-parking { grid-column: 1; grid-row: 2; }
-  .panel-audio { grid-column: 2; grid-row: 1 / span 2; } /* Spans entire right height */
-  .panel-post { grid-column: 1 / span 2; grid-row: 3; } /* Spans entire bottom width */
 
   .panel {
     background: var(--bg-panel);
@@ -163,7 +158,7 @@
     border-radius: 10px;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: hidden; /* Enforces no scrolling */
   }
   .panel-header {
     background: var(--bg-panel-header);
@@ -178,27 +173,25 @@
   
   /* Fluid wrapping content areas */
   .panel-content {
-    padding: 12px;
+    padding: 10px;
     flex: 1;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
-    gap: 10px;
-    overflow-y: auto;
-    scrollbar-width: none; /* Hide scrollbar Firefox */
+    gap: 8px;
+    overflow: hidden; /* Enforces no scrolling */
   }
-  .panel-content::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome/Safari */
   
   .data-group {
     background: rgba(13, 15, 22, 0.5);
     border: 1px solid rgba(31, 41, 55, 0.6);
     border-radius: 6px;
-    padding: 8px 12px;
+    padding: 6px 10px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    flex: 1 1 calc(50% - 10px);
-    min-width: 130px;
+    gap: 2px;
+    flex: 1 1 calc(50% - 8px);
+    min-width: 110px;
   }
   .full-width {
     flex: 1 1 100%;
@@ -211,12 +204,12 @@
     font-weight: 600;
   }
   .data-value {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-main);
     word-wrap: break-word;
     white-space: pre-wrap;
-    line-height: 1.3;
+    line-height: 1.2;
   }
   .empty-val { color: #4b5563; font-weight: 400; }
 </style>
@@ -225,7 +218,7 @@
 
 <div id="top-nav">
   <div class="nav-title">
-    <span style="background: var(--accent-blue); padding: 3px 6px; border-radius: 4px; color: white; font-size: 12px;">TECH DASHBOARD</span>
+    <span style="background: var(--accent-blue); padding: 3px 6px; border-radius: 4px; color: white; font-size: 11px;">TECH DASHBOARD</span>
     <span id="loaded-status" style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Loading data...</span>
   </div>
   <div class="nav-controls">
@@ -248,23 +241,23 @@
   </div>
   
   <div class="dashboard-grid">
-    <div class="panel panel-staff">
-      <div class="panel-header">Staff on the Day</div>
+    <div class="panel">
+      <div class="panel-header">1 &bull; Staff on the Day</div>
       <div class="panel-content" id="panel-staff"></div>
     </div>
     
-    <div class="panel panel-audio">
-      <div class="panel-header">Audio, LX & Risers Requirements</div>
+    <div class="panel">
+      <div class="panel-header">2 &bull; Audio, LX & Risers Requirements</div>
       <div class="panel-content" id="panel-audiolx"></div>
     </div>
 
-    <div class="panel panel-parking">
-      <div class="panel-header">Parking, Admin & Extra Notes</div>
+    <div class="panel">
+      <div class="panel-header">3 &bull; Parking, Admin & Extra Notes</div>
       <div class="panel-content" id="panel-parking"></div>
     </div>
     
-    <div class="panel panel-post">
-      <div class="panel-header">Post-Show Setup Instructions</div>
+    <div class="panel">
+      <div class="panel-header">4 &bull; Post-Show Setup Instructions</div>
       <div class="panel-content" id="panel-post"></div>
     </div>
   </div>
@@ -284,8 +277,19 @@
   
   let headerGroups = { staff: [], parking: [], audiolx: [], post: [] };
   
-  // Exact keywords for items that should move to the top right meta area
-  const metaKeywords = ['promot', 'rep', 'door', 'access', 'load', 'fire cert', 'show stop', 'foh riser', 'accreditation'];
+  // Logic to strictly determine if a column belongs in the Top Meta section
+  function isHeaderMeta(h) {
+    const lower = h.toLowerCase();
+    
+    // STRICT EXCEPTION: "Tech 3 / Access" belongs in Staff, NOT Meta. 
+    if (lower.includes('access') && lower.includes('tech')) return false;
+    
+    // Explicit matches for the top right bar
+    if (lower.includes('access')) return true; 
+    
+    const metaKw = ['promot', 'rep', 'door', 'load', 'fire cert', 'show stop', 'foh riser', 'accreditation'];
+    return metaKw.some(kw => lower.includes(kw));
+  }
 
   function parseCSV(text) {
     let lines = [];
@@ -316,13 +320,11 @@
     
     headers.forEach((h, idx) => {
       if (idx === dateIndex || idx === titleIndex || !h.trim()) return;
+      
+      // If it's a meta field, skip putting it in the 4 grid panels
+      if (isHeaderMeta(h)) return;
+      
       const lower = h.toLowerCase();
-      
-      // If header contains a meta keyword, skip grouping it into panels
-      const isMetaField = metaKeywords.some(kw => lower.includes(kw));
-      if (isMetaField) return;
-      
-      // Grouping the remaining headers
       if (lower.match(/post|setup|night/)) {
         headerGroups.post.push(h);
       } else if (lower.match(/tech|crew|runner|manager|staff/)) {
@@ -394,15 +396,13 @@
     container.innerHTML = '';
     
     if (groupKeys.length === 0) {
-      container.innerHTML = `<div class="data-group full-width"><div class="data-value empty-val">No data found in sheet</div></div>`;
+      container.innerHTML = `<div class="data-group full-width"><div class="data-value empty-val">No data</div></div>`;
       return;
     }
     
     groupKeys.forEach(h => {
       const val = activeShow[h];
       const displayVal = (val && val.trim() !== '' && val !== '-') ? val : '<span class="empty-val">—</span>';
-      
-      // Make longer text fields stretch across the grid
       const isFullWidth = (h.toLowerCase().includes('note') || h.toLowerCase().includes('setup') || panelId === 'panel-post');
       
       container.innerHTML += `
@@ -432,7 +432,6 @@
     const banner = document.getElementById('double-show-banner');
     const selectorContainer = document.getElementById('show-selector-buttons');
     
-    // Handle Double Shows
     if (shows.length > 1) {
       banner.style.display = 'flex';
       selectorContainer.innerHTML = '';
@@ -451,24 +450,20 @@
     const activeShow = shows[activeShowIndexOnDate];
     document.getElementById('show-title-display').innerText = activeShow[headers[titleIndex]] || 'Unnamed Show';
     
-    // Construct Top Right Meta Variables 
+    // Render Top Meta Items explicitly in original order
     const metaContainer = document.getElementById('show-meta-area');
-    metaContainer.innerHTML = createMetaBadge('Date', currentDate); // Always render Date first
+    metaContainer.innerHTML = createMetaBadge('Date', currentDate);
     
-    const matchedMetaHeaders = new Set();
-    metaKeywords.forEach(kw => {
-      // Find exact header matching keyword to prevent duplicates and ensure correct title
-      const matchedHeader = headers.find(h => h.toLowerCase().includes(kw));
-      if (matchedHeader && !matchedMetaHeaders.has(matchedHeader)) {
-        matchedMetaHeaders.add(matchedHeader);
-        metaContainer.innerHTML += createMetaBadge(matchedHeader, activeShow[matchedHeader]);
+    headers.forEach(h => {
+      if (h !== headers[dateIndex] && h !== headers[titleIndex] && isHeaderMeta(h)) {
+        metaContainer.innerHTML += createMetaBadge(h, activeShow[h]);
       }
     });
 
-    // Populate Lower Grid Panels
+    // Populate Grids
     populatePanel('panel-staff', headerGroups.staff, activeShow);
-    populatePanel('panel-parking', headerGroups.parking, activeShow);
     populatePanel('panel-audiolx', headerGroups.audiolx, activeShow);
+    populatePanel('panel-parking', headerGroups.parking, activeShow);
     populatePanel('panel-post', headerGroups.post, activeShow);
   }
 
