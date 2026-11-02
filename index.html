@@ -19,13 +19,17 @@
     background-color: var(--bg-main);
     color: var(--text-main);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
+    
+    /* Enabled full-page panning for smaller devices */
+    min-height: 100vh;
+    min-width: 1000px; /* Locks desktop scale so it never squishes */
+    overflow: auto; 
+    
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
     background-image: radial-gradient(circle at 50% 0%, rgba(20, 25, 40, 1) 0%, rgba(6, 7, 10, 1) 80%);
+    background-attachment: fixed;
   }
   
   /* Top Nav */
@@ -96,7 +100,7 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    overflow: hidden; 
+    /* overflow hidden removed to allow smooth scrolling if needed */
   }
   
   /* Header Layout */
@@ -249,6 +253,25 @@
     gap: 2px;
   }
   
+  /* Tint classes for 3-Show Overview to match Day view themes */
+  .tint-green {
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.1) 0%, rgba(0,0,0,0.3) 100%) !important;
+    border-color: rgba(16, 185, 129, 0.2) !important;
+  }
+  .tint-green .data-label { color: #34d399 !important; }
+  
+  .tint-blue {
+    background: linear-gradient(145deg, rgba(59, 130, 246, 0.1) 0%, rgba(0,0,0,0.3) 100%) !important;
+    border-color: rgba(59, 130, 246, 0.2) !important;
+  }
+  .tint-blue .data-label { color: #60a5fa !important; }
+  
+  .tint-purple {
+    background: linear-gradient(145deg, rgba(139, 92, 246, 0.1) 0%, rgba(0,0,0,0.3) 100%) !important;
+    border-color: rgba(139, 92, 246, 0.2) !important;
+  }
+  .tint-purple .data-label { color: #a78bfa !important; }
+  
   .span-1 { grid-column: span 1; }
   .span-2 { grid-column: span 2; }
   .staff-item { flex: 1; } 
@@ -276,14 +299,12 @@
     flex: 1;
     flex-direction: column;
     gap: 15px;
-    overflow-y: auto;
   }
   .overview-grid-3 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
     flex: 1;
-    min-height: 0;
   }
   .overview-card {
     background: var(--bg-panel);
@@ -294,7 +315,6 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    overflow-y: auto;
     box-shadow: 0 10px 30px -10px rgba(0,0,0,0.8);
   }
   .overview-card-title {
@@ -324,7 +344,6 @@
 
   .overview-table-container {
     flex: 1;
-    overflow-y: auto;
     border-radius: 10px;
     border: 1px solid rgba(255,255,255,0.05);
     box-shadow: 0 10px 30px -10px rgba(0,0,0,0.8);
@@ -724,12 +743,12 @@
     upcomingShows.forEach(show => {
       const title = show[headers[titleIndex]] || 'Unnamed Show';
       const date = show.__dateKey;
+      
       const promotor = getFieldValue(show, ['promot']);
       const access = getFieldValue(show, ['access']);
       const loadIn = getFieldValue(show, ['load']);
       const staffing = getStaffingHTML(show, false, 'column');
       
-      // Specifically pull audio and lx, avoiding the power fields
       const audio = getFieldValue(show, ['audio'], ['power']);
       const lx = getFieldValue(show, ['light', 'sfx', 'lx'], ['power']);
 
@@ -737,21 +756,24 @@
         <div class="overview-card">
           <div class="overview-card-date">${date}</div>
           <div class="overview-card-title">${title}</div>
+          
           <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div class="data-group"><div class="data-label">Promotor</div><div class="data-value">${promotor}</div></div>
-            <div class="data-group"><div class="data-label">Access</div><div class="data-value">${access}</div></div>
-            <div class="data-group span-2" style="grid-column: span 2;"><div class="data-label">Load In</div><div class="data-value">${loadIn}</div></div>
+            <div class="data-group tint-green"><div class="data-label">Promotor</div><div class="data-value">${promotor}</div></div>
+            <div class="data-group tint-green"><div class="data-label">Access</div><div class="data-value">${access}</div></div>
+            <div class="data-group span-2 tint-green"><div class="data-label">Load In</div><div class="data-value">${loadIn}</div></div>
           </div>
-          <div class="data-group" style="justify-content: flex-start; padding: 12px 14px;">
+          
+          <div class="data-group tint-blue" style="justify-content: flex-start; padding: 12px 14px;">
             <div class="data-label" style="font-size: 11px; margin-bottom: 4px;">Staffing Information</div>
             ${staffing}
           </div>
+          
           <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; flex:1;">
-            <div class="data-group" style="justify-content: flex-start;">
+            <div class="data-group tint-purple" style="justify-content: flex-start;">
               <div class="data-label">Audio</div>
               <div class="data-value" style="font-size: 13.5px; line-height: 1.35; padding-top:4px;">${audio}</div>
             </div>
-            <div class="data-group" style="justify-content: flex-start;">
+            <div class="data-group tint-purple" style="justify-content: flex-start;">
               <div class="data-label">Lighting / SFX</div>
               <div class="data-value" style="font-size: 13.5px; line-height: 1.35; padding-top:4px;">${lx}</div>
             </div>
