@@ -68,14 +68,14 @@
 
   .nav-controls {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
   }
   button {
     background: rgba(255, 255, 255, 0.05);
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 4px 12px;
+    padding: 4px 10px;
     border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
@@ -90,7 +90,7 @@
     color: #60a5fa;
   }
   
-  #main-content {
+  .main-container {
     flex: 1;
     padding: 12px 20px;
     display: flex;
@@ -269,6 +269,63 @@
     line-height: 1.2;
   }
   .empty-val { color: #4b5563; font-weight: 400; }
+
+  /* --- OVERVIEW VIEWS STYLING --- */
+  .overview-view {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    gap: 15px;
+    overflow-y: auto;
+  }
+  .overview-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    flex: 1;
+  }
+  .overview-card {
+    background: var(--bg-panel);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-top: 2px solid var(--accent-blue);
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .overview-card-title {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--text-main);
+  }
+  .overview-card-date {
+    font-size: 11px;
+    color: var(--accent-blue);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .overview-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-panel);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .overview-table th, .overview-table td {
+    padding: 10px 15px;
+    text-align: left;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .overview-table th {
+    background: rgba(0,0,0,0.3);
+    color: var(--accent-blue);
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
 </style>
 </head>
 <body>
@@ -285,19 +342,26 @@
   </div>
 
   <div class="nav-controls">
-    <button onclick="changeDate(-1)">&#8592; Prev Day</button>
-    <button onclick="changeDate(1)">Next Day &#8594;</button>
+    <!-- View Switchers -->
+    <button id="btn-view-day" class="active-btn" onclick="switchView('day')">1 &bull; Day</button>
+    <button id="btn-view-3shows" onclick="switchView('3shows')">3 &bull; Shows</button>
+    <button id="btn-view-month" onclick="switchView('month')">1 &bull; Month</button>
+    
+    <span style="color: rgba(255,255,255,0.2);">|</span>
+    
+    <button id="nav-prev" onclick="changeDate(-1)">&#8592; Prev</button>
+    <button id="nav-next" onclick="changeDate(1)">Next &#8594;</button>
   </div>
 </div>
 
-<div id="main-content">
+<!-- ================= VIEW 1: SINGLE DAY (Original) ================= -->
+<div id="view-day" class="main-container">
   <div id="show-header-area">
     <h1 id="show-title-display">Loading Show...</h1>
     <div id="show-meta-area"></div>
   </div>
   
   <div class="dashboard-columns">
-    <!-- LEFT COLUMN -->
     <div class="column">
       <div class="panel panel-flexible panel-color-staff" style="flex: 0 1 auto;"> 
         <div class="panel-header">1 &bull; Staff on the Day</div>
@@ -309,7 +373,6 @@
       </div>
     </div>
     
-    <!-- RIGHT COLUMN -->
     <div class="column">
       <div class="panel panel-flexible panel-color-audiolx">
         <div class="panel-header">2 &bull; Audio, LX, Risers & Supports</div>
@@ -323,18 +386,45 @@
   </div>
 </div>
 
+<!-- ================= VIEW 2: 3 SHOWS OVERVIEW ================= -->
+<div id="view-3shows" class="main-container overview-view">
+  <h2 style="margin:0; font-size: 22px; font-weight: 800;">Next 3 Upcoming Shows Overview</h2>
+  <div class="overview-grid-3" id="container-3shows"></div>
+</div>
+
+<!-- ================= VIEW 3: MONTH OVERVIEW ================= -->
+<div id="view-month" class="main-container overview-view">
+  <h2 style="margin:0; font-size: 22px; font-weight: 800;" id="month-title-display">Monthly Shows Overview</h2>
+  <div style="flex: 1; overflow-y: auto;">
+    <table class="overview-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Show Name</th>
+          <th>Promotor</th>
+          <th>Access</th>
+          <th>Load In</th>
+          <th>Staffing Information</th>
+        </tr>
+      </thead>
+      <tbody id="table-month-body"></tbody>
+    </table>
+  </div>
+</div>
+
 <script>
   const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgVZRHRjrtZCMkzzd8bIlSqVE81Yori6toV_peAXIrn1gzuJXJvRhv8kixtnPrNyJac73k5SBwys7N/pub?gid=0&single=true&output=csv';
   
+  let allShowsFlat = []; // Stores all rows as objects for easy querying across views
   let showsByDate = {};
   let dates = [];
   let currentDateIndex = 0;
   let activeShowIndexOnDate = 0;
+  let currentView = 'day'; // 'day', '3shows', 'month'
   
   let headers = [];
   let dateIndex = -1;
   let titleIndex = -1;
-  
   let headerGroups = { staff: [], parking: [], audiolx: [], post: [] };
   
   function isHeaderMeta(h) {
@@ -405,6 +495,7 @@
 
       groupHeadersByKeyword();
       showsByDate = {};
+      allShowsFlat = [];
       let loadedCount = 0;
       
       for (let i = 1; i < rows.length; i++) {
@@ -415,8 +506,12 @@
         let show = {};
         headers.forEach((h, idx) => { show[h] = r[idx] || ''; });
 
+        show.__dateKey = dateKey;
+        show.__parsedDate = new Date(dateKey);
+
         if (!showsByDate[dateKey]) showsByDate[dateKey] = [];
         showsByDate[dateKey].push(show);
+        allShowsFlat.push(show);
         loadedCount++;
       }
 
@@ -427,7 +522,7 @@
         if (isInitialLoad) {
           findClosestFutureDateIndex();
         }
-        renderCurrentDate();
+        renderActiveView();
       } else {
         document.getElementById('show-title-display').innerText = 'Sheet is empty';
       }
@@ -436,7 +531,6 @@
     }
   }
 
-  // Automatically find today or the closest upcoming future date
   function findClosestFutureDateIndex() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -450,27 +544,56 @@
       if (!isNaN(parsedDate)) {
         parsedDate.setHours(0, 0, 0, 0);
         const diff = parsedDate - today;
-
-        // Exact match for today or future dates
-        if (diff >= 0) {
-          if (diff < smallestDiff) {
-            smallestDiff = diff;
-            closestIndex = idx;
-            foundFutureOrToday = true;
-          }
+        if (diff >= 0 && diff < smallestDiff) {
+          smallestDiff = diff;
+          closestIndex = idx;
+          foundFutureOrToday = true;
         }
       }
     });
 
-    // If no future or current date exists, default to the last available date in the sheet
     if (!foundFutureOrToday && dates.length > 0) {
       closestIndex = dates.length - 1;
     }
-
     currentDateIndex = closestIndex;
   }
 
+  function switchView(viewName) {
+    currentView = viewName;
+    document.getElementById('btn-view-day').className = (viewName === 'day') ? 'active-btn' : '';
+    document.getElementById('btn-view-3shows').className = (viewName === '3shows') ? 'active-btn' : '';
+    document.getElementById('btn-view-month').className = (viewName === 'month') ? 'active-btn' : '';
+    
+    // Hide all views
+    document.getElementById('view-day').style.display = 'none';
+    document.getElementById('view-3shows').style.display = 'none';
+    document.getElementById('view-month').style.display = 'none';
+    
+    // Show active view
+    document.getElementById(`view-${viewName}`).style.display = 'flex';
+    
+    // Hide/Show prev-next buttons depending on view
+    const navButtons = document.getElementById('nav-prev');
+    const nextButtons = document.getElementById('nav-next');
+    if (viewName === 'day') {
+      navButtons.style.display = 'inline-block';
+      nextButtons.style.display = 'inline-block';
+    } else {
+      navButtons.style.display = 'none';
+      nextButtons.style.display = 'none';
+    }
+
+    renderActiveView();
+  }
+
+  function renderActiveView() {
+    if (currentView === 'day') renderCurrentDate();
+    else if (currentView === '3shows') render3ShowsView();
+    else if (currentView === 'month') renderMonthView();
+  }
+
   function changeDate(direction) {
+    if (currentView !== 'day') return;
     currentDateIndex += direction;
     if (currentDateIndex < 0) currentDateIndex = 0;
     if (currentDateIndex >= dates.length) currentDateIndex = dates.length - 1;
@@ -483,6 +606,117 @@
     renderCurrentDate();
   }
 
+  // Helper to extract specific fields safely
+  function getFieldValue(showObj, queryKeywords) {
+    for (let kw of queryKeywords) {
+      const foundKey = Object.keys(showObj).find(k => k.toLowerCase().includes(kw));
+      if (foundKey && showObj[foundKey] && showObj[foundKey].trim() !== '' && showObj[foundKey] !== '-') {
+        return showObj[foundKey];
+      }
+    }
+    return '—';
+  }
+
+  // Helper to get formatted Staffing string
+  function getStaffingString(showObj) {
+    let staffVals = [];
+    headerGroups.staff.forEach(h => {
+      const val = showObj[h];
+      if (val && val.trim() !== '' && val !== '-') {
+        staffVals.push(`<b>${h}:</b> ${val}`);
+      }
+    });
+    return staffVals.length > 0 ? staffVals.join('<br>') : '—';
+  }
+
+  // --- RENDER VIEW 2: 3 SHOWS ---
+  function render3ShowsView() {
+    const container = document.getElementById('container-3shows');
+    container.innerHTML = '';
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    // Filter future or today shows
+    const upcomingShows = allShowsFlat.filter(s => {
+      if (isNaN(s.__parsedDate)) return false;
+      return s.__parsedDate >= today;
+    }).sort((a,b) => a.__parsedDate - b.__parsedDate).slice(0, 3);
+
+    if (upcomingShows.length === 0) {
+      container.innerHTML = `<div style="color:var(--text-muted);">No upcoming shows found.</div>`;
+      return;
+    }
+
+    upcomingShows.forEach(show => {
+      const title = show[headers[titleIndex]] || 'Unnamed Show';
+      const date = show.__dateKey;
+      const promotor = getFieldValue(show, ['promot']);
+      const access = getFieldValue(show, ['access']);
+      const loadIn = getFieldValue(show, ['load']);
+      const staffing = getStaffingString(show);
+
+      container.innerHTML += `
+        <div class="overview-card">
+          <div class="overview-card-date">${date}</div>
+          <div class="overview-card-title">${title}</div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top:5px;">
+            <div class="data-group"><div class="data-label">Promotor</div><div class="data-value" style="font-size:12px;">${promotor}</div></div>
+            <div class="data-group"><div class="data-label">Access</div><div class="data-value" style="font-size:12px;">${access}</div></div>
+            <div class="data-group span-2"><div class="data-label">Load In</div><div class="data-value" style="font-size:12px;">${loadIn}</div></div>
+          </div>
+          <div class="data-group" style="margin-top:5px; flex:1;">
+            <div class="data-label">Staffing</div>
+            <div class="data-value" style="font-size:11.5px; line-height:1.3;">${staffing}</div>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  // --- RENDER VIEW 3: MONTH ---
+  function renderMonthView() {
+    const tbody = document.getElementById('table-month-body');
+    tbody.innerHTML = '';
+
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+
+    document.getElementById('month-title-display').innerText = `Shows Overview — ${today.toLocaleString('default', { month: 'long' })} ${currentYear}`;
+
+    const monthShows = allShowsFlat.filter(s => {
+      if (isNaN(s.__parsedDate)) return false;
+      return s.__parsedDate.getMonth() === currentMonth && s.__parsedDate.getFullYear() === currentYear;
+    }).sort((a,b) => a.__parsedDate - b.__parsedDate);
+
+    if (monthShows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No shows scheduled for this month.</td></tr>`;
+      return;
+    }
+
+    monthShows.forEach(show => {
+      const title = show[headers[titleIndex]] || 'Unnamed Show';
+      const date = show.__dateKey;
+      const promotor = getFieldValue(show, ['promot']);
+      const access = getFieldValue(show, ['access']);
+      const loadIn = getFieldValue(show, ['load']);
+      const staffing = getStaffingString(show);
+
+      tbody.innerHTML += `
+        <tr>
+          <td><b>${date}</b></td>
+          <td style="color:var(--accent-blue); font-weight:700;">${title}</td>
+          <td>${promotor}</td>
+          <td>${access}</td>
+          <td>${loadIn}</td>
+          <td style="font-size:11px; line-height:1.2;">${staffing}</td>
+        </tr>
+      `;
+    });
+  }
+
+  // --- RENDER ORIGINAL DAY VIEW ---
   function populatePanel(panelId, groupKeys, activeShow) {
     const container = document.getElementById(panelId);
     container.innerHTML = '';
@@ -494,7 +728,6 @@
 
     function getSortRank(h) {
       const lower = h.toLowerCase().trim();
-      
       if (panelId === 'panel-parking') {
         if (lower === 'parking' || (lower.includes('parking') && !lower.includes('code'))) return 1;
         if (lower.includes('parking code')) return 2;
@@ -516,7 +749,6 @@
     }
 
     groupKeys.sort((a, b) => getSortRank(a) - getSortRank(b));
-    
     const halfWidthMatches = ['parking', 'parking code', 'lx power', 'audio power', 'stage towels', 'bath towels'];
     
     groupKeys.forEach(h => {
@@ -525,7 +757,6 @@
       const lower = h.toLowerCase().trim();
       
       let cssClass = 'span-2'; 
-      
       if (panelId === 'panel-staff') {
         cssClass = 'staff-item';
       } else if (halfWidthMatches.some(kw => lower.includes(kw))) {
@@ -562,7 +793,6 @@
     if (shows.length > 1) {
       bannerContainer.style.display = 'flex';
       selectorContainer.innerHTML = '';
-      shows.questions = [];
       shows.forEach((s, idx) => {
         const btn = document.createElement('button');
         btn.innerText = `Show ${idx + 1}: ${s[headers[titleIndex]].substring(0, 15)}...`;
@@ -593,10 +823,7 @@
     populatePanel('panel-post', headerGroups.post, activeShow);
   }
 
-  // Initial load with smart future date detection
   fetchData(true);
-  
-  // Background live sync every 60 seconds
   setInterval(() => fetchData(false), 60000); 
 </script>
 </body>
