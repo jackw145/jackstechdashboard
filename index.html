@@ -14,17 +14,16 @@
     --accent-purple: #8b5cf6;
     --border-color: #2d3748;
   }
+  
+  /* DEFAULT DESKTOP / TV LAYOUT (Strict, No Scroll) */
   body {
     margin: 0;
     background-color: var(--bg-main);
     color: var(--text-main);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    
-    /* Enabled full-page panning for smaller devices */
-    min-height: 100vh;
-    min-width: 1000px; /* Locks desktop scale so it never squishes */
-    overflow: auto; 
-    
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden; 
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
@@ -40,8 +39,10 @@
     padding: 6px 16px;
     background-color: rgba(10, 12, 18, 0.7);
     border-bottom: 1px solid rgba(255,255,255,0.05);
-    height: 42px;
+    min-height: 42px;
     backdrop-filter: blur(10px);
+    flex-wrap: wrap;
+    gap: 10px;
   }
   .nav-title {
     font-size: 12px;
@@ -68,12 +69,13 @@
     letter-spacing: 1px;
     text-transform: uppercase;
   }
-  .show-selector { display: flex; gap: 6px; }
+  .show-selector { display: flex; flex-wrap: wrap; gap: 6px; }
 
   .nav-controls {
     display: flex;
     gap: 6px;
     align-items: center;
+    flex-wrap: wrap;
   }
   button {
     background: rgba(255, 255, 255, 0.05);
@@ -100,7 +102,7 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    /* overflow hidden removed to allow smooth scrolling if needed */
+    overflow: hidden; 
   }
   
   /* Header Layout */
@@ -253,7 +255,6 @@
     gap: 2px;
   }
   
-  /* Tint classes for 3-Show Overview to match Day view themes */
   .tint-green {
     background: linear-gradient(145deg, rgba(16, 185, 129, 0.1) 0%, rgba(0,0,0,0.3) 100%) !important;
     border-color: rgba(16, 185, 129, 0.2) !important;
@@ -344,6 +345,7 @@
 
   .overview-table-container {
     flex: 1;
+    overflow-y: auto;
     border-radius: 10px;
     border: 1px solid rgba(255,255,255,0.05);
     box-shadow: 0 10px 30px -10px rgba(0,0,0,0.8);
@@ -368,6 +370,56 @@
     font-size: 11px; 
     letter-spacing: 1px;
     z-index: 2;
+  }
+
+  /* =======================================================
+     MOBILE RESPONSIVE OVERRIDES (Unlocks layout on phones)
+     ======================================================= */
+  @media (max-width: 1024px) {
+    body {
+      height: auto;
+      min-height: 100vh;
+      overflow: auto; /* Enable scrolling for mobile */
+    }
+    .main-container, .panel, .panel-grid-layout, #show-meta-area {
+      overflow: visible; /* Stop clipping on mobile */
+    }
+    /* Let top title wrap */
+    #show-header-area {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+    #show-title-display {
+      max-width: 100%;
+      white-space: normal;
+    }
+    #show-meta-area {
+      flex-wrap: wrap;
+      justify-content: flex-start;
+    }
+    /* Stack Dashboard columns vertically */
+    .dashboard-columns {
+      flex-direction: column;
+    }
+    .panel-staff-row {
+      flex-wrap: wrap; /* Allow staff to drop to next line */
+    }
+    /* Stack 3-Show overview vertically */
+    .overview-grid-3 {
+      grid-template-columns: 1fr;
+    }
+    /* Month view allows horizontal scroll natively inside its container */
+  }
+
+  /* Extremely small phones */
+  @media (max-width: 600px) {
+    .panel-grid-layout {
+      grid-template-columns: 1fr; /* 1 column grid */
+    }
+    .span-1, .span-2 {
+      grid-column: span 1; /* Everything goes full width */
+    }
   }
 </style>
 </head>
