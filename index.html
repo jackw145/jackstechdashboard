@@ -270,7 +270,7 @@
   }
   .empty-val { color: #4b5563; font-weight: 400; }
 
-  /* --- OVERVIEW VIEWS STYLING (Fonts Adjusted) --- */
+  /* --- OVERVIEW VIEWS STYLING --- */
   .overview-view {
     display: none;
     flex: 1;
@@ -281,7 +281,7 @@
   .overview-grid-3 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
+    gap: 20px;
     flex: 1;
     min-height: 0;
   }
@@ -289,26 +289,40 @@
     background: var(--bg-panel);
     border: 1px solid rgba(255,255,255,0.05);
     border-top: 2px solid var(--accent-blue);
-    border-radius: 10px;
-    padding: 15px;
+    border-radius: 12px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     overflow-y: auto;
     box-shadow: 0 10px 30px -10px rgba(0,0,0,0.8);
   }
   .overview-card-title {
-    font-size: 20px; /* Increased from 18px */
+    font-size: 26px; /* Significantly increased */
     font-weight: 900;
     color: var(--text-main);
+    line-height: 1.1;
   }
   .overview-card-date {
-    font-size: 12px; /* Increased from 11px */
+    font-size: 14px; /* Increased */
     color: var(--accent-blue);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
   }
+  
+  /* Targeted styles for inner boxes on the 3-Show screen */
+  .overview-card .data-group {
+    padding: 10px 12px;
+  }
+  .overview-card .data-label {
+    font-size: 10.5px;
+  }
+  .overview-card .data-value {
+    font-size: 15.5px;
+    line-height: 1.35;
+  }
+
   .overview-table-container {
     flex: 1;
     overflow-y: auto;
@@ -322,9 +336,9 @@
     background: var(--bg-panel);
   }
   .overview-table th, .overview-table td {
-    padding: 12px 15px; /* Increased padding slightly */
+    padding: 12px 15px; 
     text-align: left;
-    font-size: 13.5px; /* Increased from 12px */
+    font-size: 13.5px; 
     border-bottom: 1px solid rgba(255,255,255,0.05);
   }
   .overview-table th {
@@ -333,7 +347,7 @@
     background: #10121a;
     color: var(--accent-blue);
     text-transform: uppercase;
-    font-size: 11px; /* Increased from 10px */
+    font-size: 11px; 
     letter-spacing: 1px;
     z-index: 2;
   }
@@ -649,9 +663,16 @@
     return '—';
   }
 
-  function getStaffingString(showObj) {
+  function getStaffingString(showObj, excludeCrewAndRunners = false) {
     let staffVals = [];
     headerGroups.staff.forEach(h => {
+      const lowerH = h.toLowerCase();
+      
+      // Specifically filter out 'crew' and 'runner' for the 1-Month view
+      if (excludeCrewAndRunners && (lowerH.includes('crew') || lowerH.includes('runner'))) {
+        return; 
+      }
+      
       const val = showObj[h];
       if (val && val.trim() !== '' && val !== '-') {
         staffVals.push(`<b>${h}:</b> ${val}`);
@@ -684,20 +705,21 @@
       const promotor = getFieldValue(show, ['promot']);
       const access = getFieldValue(show, ['access']);
       const loadIn = getFieldValue(show, ['load']);
-      const staffing = getStaffingString(show);
+      // Notice we do NOT filter crew/runners here as per instructions
+      const staffing = getStaffingString(show, false);
 
       container.innerHTML += `
         <div class="overview-card">
           <div class="overview-card-date">${date}</div>
           <div class="overview-card-title">${title}</div>
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <div class="data-group"><div class="data-label">Promotor</div><div class="data-value" style="font-size:12.5px;">${promotor}</div></div>
-            <div class="data-group"><div class="data-label">Access</div><div class="data-value" style="font-size:12.5px;">${access}</div></div>
-            <div class="data-group span-2" style="grid-column: span 2;"><div class="data-label">Load In</div><div class="data-value" style="font-size:12.5px;">${loadIn}</div></div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="data-group"><div class="data-label">Promotor</div><div class="data-value">${promotor}</div></div>
+            <div class="data-group"><div class="data-label">Access</div><div class="data-value">${access}</div></div>
+            <div class="data-group span-2" style="grid-column: span 2;"><div class="data-label">Load In</div><div class="data-value">${loadIn}</div></div>
           </div>
           <div class="data-group" style="flex:1; justify-content: flex-start;">
             <div class="data-label">Staffing Information</div>
-            <div class="data-value" style="font-size:12px; line-height:1.4; padding-top:4px;">${staffing}</div>
+            <div class="data-value" style="padding-top:4px;">${staffing}</div>
           </div>
         </div>
       `;
@@ -718,7 +740,6 @@
     const monthShows = allShowsFlat.filter(s => {
       if (isNaN(s.__parsedDate)) return false;
       const showTime = s.__parsedDate.getTime();
-      // Only include shows from today onwards, up to exactly 1 month ahead
       return showTime >= today.getTime() && showTime <= oneMonthFromNow.getTime();
     }).sort((a,b) => a.__parsedDate - b.__parsedDate);
 
@@ -733,7 +754,8 @@
       const promotor = getFieldValue(show, ['promot']);
       const access = getFieldValue(show, ['access']);
       const loadIn = getFieldValue(show, ['load']);
-      const staffing = getStaffingString(show);
+      // We pass 'true' here to EXCLUDE Crew and Runners for the Month View only
+      const staffing = getStaffingString(show, true); 
 
       tbody.innerHTML += `
         <tr>
