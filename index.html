@@ -223,7 +223,7 @@
     letter-spacing: 1px;
   }
   
-  /* UPDATED 4-COLUMN STRICT GRID */
+  /* 4-COLUMN STRICT GRID */
   .panel-grid-layout {
     padding: 10px;
     flex: 1;
@@ -531,7 +531,7 @@
     if (lower.includes('access') && lower.includes('tech')) return false; 
     if (lower.includes('access')) return true; 
     
-    // Removed the 4 metadata fields so they drop naturally into the main panel
+    // Explicitly removed the admin fields from being treated as 'meta' so they drop down into the panels
     const metaKw = ['promot', 'rep', 'door', 'load'];
     return metaKw.some(kw => lower.includes(kw));
   }
@@ -583,7 +583,14 @@
       if (idx === dateIndex || idx === titleIndex || !h.trim()) return;
       if (isHeaderMeta(h)) return;
       const lower = h.toLowerCase();
-      if (lower.match(/post|setup|night/)) {
+      
+      // BROAD OVERRIDE: Catch these exactly as they are so formatting/spacing differences in the CSV don't break them.
+      const isAdminItem = lower.includes('stop') || lower.includes('fire') || lower.includes('foh') || lower.includes('accredit');
+      
+      if (isAdminItem) {
+        headerGroups.parking.push(h);
+      }
+      else if (lower.match(/post|setup|night/)) {
         headerGroups.post.push(h);
       } else if (lower.match(/tech|crew|runner|manager|staff/)) {
         headerGroups.staff.push(h);
@@ -935,16 +942,16 @@
       return;
     }
 
-    // STRICT CUSTOM SORTING
+    // BROAD KEYWORD SORTING for reliability
     function getSortRank(h) {
       const lower = h.toLowerCase().trim();
       if (panelId === 'panel-parking') {
         if (lower === 'parking' || (lower.includes('parking') && !lower.includes('code'))) return 1;
         if (lower.includes('parking code')) return 2;
-        if (lower.includes('show stop')) return 3.1;
-        if (lower.includes('fire cert')) return 3.2;
-        if (lower.includes('foh riser')) return 3.3;
-        if (lower.includes('accreditation')) return 3.4;
+        if (lower.includes('stop')) return 3.1;
+        if (lower.includes('fire')) return 3.2;
+        if (lower.includes('foh')) return 3.3;
+        if (lower.includes('accredit')) return 3.4;
         if (lower.includes('stage time')) return 4;
         if (lower.includes('stage towel')) return 5;
         if (lower.includes('bath towel')) return 6;
@@ -964,7 +971,7 @@
 
     groupKeys.sort((a, b) => getSortRank(a) - getSortRank(b));
     
-    const quarterWidthMatches = ['show stop', 'fire cert', 'foh riser', 'accreditation'];
+    const quarterWidthMatches = ['stop', 'fire', 'foh', 'accredit'];
     const halfWidthMatches = ['parking', 'parking code', 'lx power', 'audio power', 'stage towels', 'bath towels'];
     
     groupKeys.forEach(h => {
