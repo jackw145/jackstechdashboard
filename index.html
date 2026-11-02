@@ -431,9 +431,12 @@
   </div>
 
   <div class="nav-controls">
+    <!-- View Switchers -->
     <button id="btn-view-day" class="active-btn" onclick="switchView('day')">1 &bull; Day</button>
     <button id="btn-view-3shows" onclick="switchView('3shows')">3 &bull; Shows</button>
     <button id="btn-view-month" onclick="switchView('month')">1 &bull; Month</button>
+    
+    <button id="btn-auto-rotate" onclick="toggleAutoRotate()" style="margin-left: 4px; border-color: rgba(255,255,255,0.2);">Auto Rotate: OFF</button>
     
     <span style="color: rgba(255,255,255,0.2);">|</span>
     
@@ -510,6 +513,12 @@
   let currentDateIndex = 0;
   let activeShowIndexOnDate = 0;
   let currentView = 'day'; 
+  
+  // Auto-Rotate Variables
+  let autoRotateTimer = null;
+  let isAutoRotating = false;
+  const viewSequence = ['day', '3shows', 'month'];
+  const ROTATE_INTERVAL_MS = 120000; // 2 minutes
   
   let headers = [];
   let dateIndex = -1;
@@ -659,17 +668,64 @@
     currentDateIndex = closestIndex;
   }
 
+  // --- AUTO ROTATE LOGIC ---
+  function toggleAutoRotate() {
+    isAutoRotating = !isAutoRotating;
+    const btn = document.getElementById('btn-auto-rotate');
+    
+    if (isAutoRotating) {
+      btn.innerText = 'Auto Rotate: ON';
+      btn.style.background = 'rgba(16, 185, 129, 0.15)';
+      btn.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+      btn.style.color = '#34d399';
+      startAutoRotateTimer();
+    } else {
+      btn.innerText = 'Auto Rotate: OFF';
+      btn.style.background = 'rgba(255, 255, 255, 0.05)';
+      btn.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+      btn.style.color = 'white';
+      stopAutoRotateTimer();
+    }
+  }
+
+  function startAutoRotateTimer() {
+    stopAutoRotateTimer();
+    autoRotateTimer = setInterval(rotateToNextView, ROTATE_INTERVAL_MS);
+  }
+
+  function stopAutoRotateTimer() {
+    if (autoRotateTimer) {
+      clearInterval(autoRotateTimer);
+      autoRotateTimer = null;
+    }
+  }
+
+  function rotateToNextView() {
+    let currentIndex = viewSequence.indexOf(currentView);
+    let nextIndex = (currentIndex + 1) % viewSequence.length;
+    switchView(viewSequence[nextIndex], true);
+  }
+
+  function resetTimerIfRunning() {
+    if (isAutoRotating) {
+      startAutoRotateTimer();
+    }
+  }
+  // --------------------------
+
   function jumpToToday() {
     findClosestFutureDateIndex();
     activeShowIndexOnDate = 0;
+    resetTimerIfRunning();
+    
     if (currentView !== 'day') {
-      switchView('day');
+      switchView('day', false);
     } else {
       renderCurrentDate();
     }
   }
 
-  function switchView(viewName) {
+  function switchView(viewName, isAutoTriggered = false) {
     currentView = viewName;
     document.getElementById('btn-view-day').className = (viewName === 'day') ? 'active-btn' : '';
     document.getElementById('btn-view-3shows').className = (viewName === '3shows') ? 'active-btn' : '';
@@ -693,6 +749,10 @@
       navNext.style.display = 'none';
     }
 
+    if (!isAutoTriggered) {
+      resetTimerIfRunning();
+    }
+
     renderActiveView();
   }
 
@@ -708,11 +768,14 @@
     if (currentDateIndex < 0) currentDateIndex = 0;
     if (currentDateIndex >= dates.length) currentDateIndex = dates.length - 1;
     activeShowIndexOnDate = 0;
+    
+    resetTimerIfRunning();
     renderCurrentDate();
   }
 
   function selectSubShow(index) {
     activeShowIndexOnDate = index;
+    resetTimerIfRunning();
     renderCurrentDate();
   }
 
