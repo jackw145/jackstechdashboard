@@ -27,17 +27,19 @@
     flex-direction: column;
     box-sizing: border-box;
   }
+  
+  /* Slimmed Top Nav */
   #top-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
+    padding: 8px 20px;
     background-color: #11141e;
     border-bottom: 1px solid var(--border-color);
-    height: 60px;
+    height: 45px;
   }
   .nav-title {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 800;
     letter-spacing: 1px;
     display: flex;
@@ -46,18 +48,18 @@
   }
   .nav-controls {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
   }
   button {
     background: #1f2937;
     color: white;
     border: 1px solid var(--border-color);
-    padding: 8px 16px;
+    padding: 6px 14px;
     border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 13px;
     transition: background 0.2s;
   }
   button:hover:not(:disabled) { background: #374151; }
@@ -68,58 +70,92 @@
     display: none;
     background: rgba(139, 92, 246, 0.15);
     border: 1px solid rgba(139, 92, 246, 0.3);
-    margin: 15px 20px 0;
-    padding: 10px 15px;
-    border-radius: 8px;
+    margin: 10px 20px 0;
+    padding: 8px 15px;
+    border-radius: 6px;
     align-items: center;
     justify-content: space-between;
   }
   .banner-text {
     color: var(--accent-purple);
     font-weight: 700;
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 1px;
   }
-  .show-selector { display: flex; gap: 10px; }
+  .show-selector { display: flex; gap: 8px; }
 
   #main-content {
     flex: 1;
-    padding: 20px;
+    padding: 15px 20px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
     overflow: hidden;
   }
+  
+  /* New Header Layout */
+  #show-header-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 5px;
+  }
   #show-title-display {
-    font-size: 42px;
+    font-size: 34px;
     font-weight: 900;
     margin: 0;
-    padding: 0 10px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--text-main);
+  }
+  #show-meta-area {
+    display: flex;
+    gap: 15px;
+    background: #0d0f16;
+    border: 1px solid #1f2937;
+    padding: 8px 15px;
+    border-radius: 8px;
+  }
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .meta-label {
+    font-size: 9px;
+    color: var(--accent-blue);
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .meta-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-main);
   }
 
+  /* Dashboard Grid */
   .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 20px;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 15px;
     flex: 1;
     min-height: 0;
   }
   .panel {
     background: var(--bg-panel);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: 10px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
   }
   .panel-header {
     background: var(--bg-panel-header);
-    padding: 10px 15px;
-    font-size: 11px;
+    padding: 8px 12px;
+    font-size: 10px;
     font-weight: 700;
     color: var(--accent-blue);
     text-transform: uppercase;
@@ -127,55 +163,56 @@
     border-bottom: 1px solid var(--border-color);
   }
   .panel-content {
-    padding: 15px;
+    padding: 10px;
     flex: 1;
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     align-content: flex-start;
-    gap: 12px;
-    overflow-y: auto;
+    gap: 8px;
+    overflow: hidden; /* Disabled scrolling */
+  }
+  .panel-content.single-col {
+    grid-template-columns: 1fr;
   }
   .data-group {
     background: #0d0f16;
     border: 1px solid #1f2937;
-    border-radius: 8px;
-    padding: 12px;
+    border-radius: 6px;
+    padding: 8px;
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    flex: 1 1 calc(50% - 12px);
-    min-width: 130px;
+    gap: 2px;
   }
-  .data-group.full-width {
-    flex: 1 1 100%;
+  .full-width {
+    grid-column: 1 / -1;
   }
   .data-label {
-    font-size: 10px;
+    font-size: 8px;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
   }
   .data-value {
-    font-size: 16px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-main);
     word-wrap: break-word;
     white-space: pre-wrap;
+    line-height: 1.2;
   }
-  .empty-val { color: #4b5563; }
+  .empty-val { color: #4b5563; font-weight: 400; }
 </style>
 </head>
 <body>
 
 <div id="top-nav">
   <div class="nav-title">
-    <span style="background: var(--accent-blue); padding: 4px 8px; border-radius: 4px; color: white;">TECH DASHBOARD</span>
-    <span id="loaded-status" style="font-size: 12px; color: var(--text-muted); font-weight: normal;">Loading data...</span>
+    <span style="background: var(--accent-blue); padding: 3px 6px; border-radius: 4px; color: white; font-size: 12px;">TECH DASHBOARD</span>
+    <span id="loaded-status" style="font-size: 11px; color: var(--text-muted); font-weight: normal;">Loading data...</span>
   </div>
   <div class="nav-controls">
     <button onclick="changeDate(-1)">&#8592; Prev</button>
-    <button class="active-btn" id="date-display">Date</button>
     <button onclick="changeDate(1)">Next &#8594;</button>
   </div>
 </div>
@@ -186,7 +223,23 @@
 </div>
 
 <div id="main-content">
-  <h1 id="show-title-display">Loading Show...</h1>
+  <div id="show-header-area">
+    <h1 id="show-title-display">Loading Show...</h1>
+    <div id="show-meta-area">
+      <div class="meta-item">
+        <span class="meta-label">Date</span>
+        <span class="meta-value" id="meta-date">-</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Promotor</span>
+        <span class="meta-value" id="meta-promotor">-</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Rep</span>
+        <span class="meta-value" id="meta-rep">-</span>
+      </div>
+    </div>
+  </div>
   
   <div class="dashboard-grid">
     <div class="panel">
@@ -195,10 +248,10 @@
     </div>
     <div class="panel">
       <div class="panel-header">2 &bull; Access, Load-In & Times</div>
-      <div class="panel-content" id="panel-times"></div>
+      <div class="panel-content" id="panel-access"></div>
     </div>
     <div class="panel">
-      <div class="panel-header">3 &bull; Parking & Extra Notes</div>
+      <div class="panel-header">3 &bull; Parking, Admin & Extra Notes</div>
       <div class="panel-content" id="panel-parking"></div>
     </div>
     <div class="panel">
@@ -211,7 +264,7 @@
     </div>
     <div class="panel">
       <div class="panel-header">6 &bull; Post-Show Setup Instructions</div>
-      <div class="panel-content" id="panel-post"></div>
+      <div class="panel-content single-col" id="panel-post"></div>
     </div>
   </div>
 </div>
@@ -227,9 +280,7 @@
   let headers = [];
   let dateIndex = -1;
   let titleIndex = -1;
-
-  // Header Categories
-  let headerGroups = { staff: [], times: [], parking: [], risers: [], audiolx: [], post: [] };
+  let headerGroups = { staff: [], access: [], parking: [], risers: [], audiolx: [], post: [] };
 
   function parseCSV(text) {
     let lines = [];
@@ -255,28 +306,29 @@
     return lines;
   }
 
-  function groupHeaders() {
-    headerGroups = { staff: [], times: [], parking: [], risers: [], audiolx: [], post: [] };
+  function groupHeadersByKeyword() {
+    headerGroups = { staff: [], access: [], parking: [], risers: [], audiolx: [], post: [] };
     
     headers.forEach((h, idx) => {
       if (idx === dateIndex || idx === titleIndex || !h.trim()) return;
       const lower = h.toLowerCase();
       
-      // Categorize headers based on keywords
-      if (lower.match(/staff|tech|crew|runner|cater|manager/)) {
-        headerGroups.staff.push(h);
-      } else if (lower.match(/access|load|door|curfew|time|support|stage/)) {
-        headerGroups.times.push(h);
-      } else if (lower.match(/park|bay|vehicle/)) {
-        headerGroups.parking.push(h);
-      } else if (lower.match(/riser|drum|foh/)) {
-        headerGroups.risers.push(h);
-      } else if (lower.match(/audio|sound|lx|light|sfx|desk/)) {
-        headerGroups.audiolx.push(h);
-      } else if (lower.match(/post|turnaround|end|night/)) {
+      // Exclude Promotor and Rep from the grid (they are moved to the top right header)
+      if (lower.includes('promotor') || lower.includes('promoter') || lower === 'rep' || lower.startsWith('rep ')) {
+        return;
+      }
+      
+      if (lower.match(/post|setup|night/)) {
         headerGroups.post.push(h);
+      } else if (lower.match(/tech|crew|runner|manager|staff/)) {
+        headerGroups.staff.push(h);
+      } else if (lower.match(/access|load|door|curfew|time|support/)) {
+        headerGroups.access.push(h);
+      } else if (lower.match(/riser/)) {
+        headerGroups.risers.push(h);
+      } else if (lower.match(/audio|lx|light|power|sfx/)) {
+        headerGroups.audiolx.push(h);
       } else {
-        // Fallback for unmatched columns
         headerGroups.parking.push(h); 
       }
     });
@@ -293,17 +345,15 @@
       
       dateIndex = headers.findIndex(h => h.toLowerCase().includes('date'));
       titleIndex = headers.findIndex(h => h.toLowerCase().includes('show') && !h.toLowerCase().includes('post'));
-      
       if (dateIndex === -1) dateIndex = 0;
       if (titleIndex === -1) titleIndex = 1;
 
-      groupHeaders();
+      groupHeadersByKeyword();
       showsByDate = {};
       let loadedCount = 0;
       
       for (let i = 1; i < rows.length; i++) {
         if (rows[i].length < 2 || !rows[i].join('').trim()) continue;
-        
         const r = rows[i];
         const dateKey = r[dateIndex] || 'Unscheduled';
         
@@ -343,16 +393,14 @@
     container.innerHTML = '';
     
     if (groupKeys.length === 0) {
-      container.innerHTML = `<div class="data-group full-width"><div class="data-value empty-val">No columns matched</div></div>`;
+      container.innerHTML = `<div class="data-group full-width"><div class="data-value empty-val">No data</div></div>`;
       return;
     }
     
     groupKeys.forEach(h => {
       const val = activeShow[h];
       const displayVal = (val && val.trim() !== '' && val !== '-') ? val : '<span class="empty-val">—</span>';
-      
-      // Make long items take full width (like Post Show or Notes)
-      const isFullWidth = (panelId === 'panel-post' || panelId === 'panel-parking');
+      const isFullWidth = (h.toLowerCase().includes('note') || h.toLowerCase().includes('setup') || panelId === 'panel-post');
       
       container.innerHTML += `
         <div class="data-group ${isFullWidth ? 'full-width' : ''}">
@@ -363,12 +411,17 @@
     });
   }
 
+  function getCleanValue(obj, keyword) {
+    const key = headers.find(h => h.toLowerCase().includes(keyword));
+    const val = key ? obj[key] : '';
+    return (val && val.trim() !== '' && val !== '-') ? val : '—';
+  }
+
   function renderCurrentDate() {
     if (dates.length === 0) return;
     const currentDate = dates[currentDateIndex];
-    document.getElementById('date-display').innerText = currentDate;
-
     const shows = showsByDate[currentDate];
+    
     const banner = document.getElementById('double-show-banner');
     const selectorContainer = document.getElementById('show-selector-buttons');
     
@@ -389,10 +442,15 @@
 
     const activeShow = shows[activeShowIndexOnDate];
     document.getElementById('show-title-display').innerText = activeShow[headers[titleIndex]] || 'Unnamed Show';
+    
+    // Inject Meta Variables (Date, Promotor, Rep)
+    document.getElementById('meta-date').innerText = currentDate;
+    document.getElementById('meta-promotor').innerText = getCleanValue(activeShow, 'promot');
+    document.getElementById('meta-rep').innerText = getCleanValue(activeShow, 'rep');
 
-    // Populate grouped panels using Row 1 text
+    // Populate panels
     populatePanel('panel-staff', headerGroups.staff, activeShow);
-    populatePanel('panel-times', headerGroups.times, activeShow);
+    populatePanel('panel-access', headerGroups.access, activeShow);
     populatePanel('panel-parking', headerGroups.parking, activeShow);
     populatePanel('panel-risers', headerGroups.risers, activeShow);
     populatePanel('panel-audiolx', headerGroups.audiolx, activeShow);
