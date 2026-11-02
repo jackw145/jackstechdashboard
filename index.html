@@ -373,18 +373,17 @@
   }
 
   /* =======================================================
-     MOBILE RESPONSIVE OVERRIDES (Unlocks layout on phones)
+     MOBILE RESPONSIVE OVERRIDES
      ======================================================= */
   @media (max-width: 1024px) {
     body {
       height: auto;
       min-height: 100vh;
-      overflow: auto; /* Enable scrolling for mobile */
+      overflow: auto; 
     }
     .main-container, .panel, .panel-grid-layout, #show-meta-area {
-      overflow: visible; /* Stop clipping on mobile */
+      overflow: visible; 
     }
-    /* Let top title wrap */
     #show-header-area {
       flex-direction: column;
       align-items: stretch;
@@ -398,27 +397,22 @@
       flex-wrap: wrap;
       justify-content: flex-start;
     }
-    /* Stack Dashboard columns vertically */
     .dashboard-columns {
       flex-direction: column;
     }
     .panel-staff-row {
-      flex-wrap: wrap; /* Allow staff to drop to next line */
+      flex-wrap: wrap; 
     }
-    /* Stack 3-Show overview vertically */
     .overview-grid-3 {
       grid-template-columns: 1fr;
     }
-    /* Month view allows horizontal scroll natively inside its container */
   }
-
-  /* Extremely small phones */
   @media (max-width: 600px) {
     .panel-grid-layout {
-      grid-template-columns: 1fr; /* 1 column grid */
+      grid-template-columns: 1fr; 
     }
     .span-1, .span-2 {
-      grid-column: span 1; /* Everything goes full width */
+      grid-column: span 1; 
     }
   }
 </style>
@@ -437,13 +431,13 @@
   </div>
 
   <div class="nav-controls">
-    <!-- View Switchers -->
     <button id="btn-view-day" class="active-btn" onclick="switchView('day')">1 &bull; Day</button>
     <button id="btn-view-3shows" onclick="switchView('3shows')">3 &bull; Shows</button>
     <button id="btn-view-month" onclick="switchView('month')">1 &bull; Month</button>
     
     <span style="color: rgba(255,255,255,0.2);">|</span>
     
+    <button id="nav-today" onclick="jumpToToday()" style="background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); color: #93c5fd;">Today</button>
     <button id="nav-prev" onclick="changeDate(-1)">&#8592; Prev</button>
     <button id="nav-next" onclick="changeDate(1)">Next &#8594;</button>
   </div>
@@ -556,17 +550,14 @@
 
   function parseSheetDate(dateStr) {
     if (!dateStr || dateStr === 'Unscheduled') return new Date(NaN);
-    
     let cleaned = dateStr.replace(/\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tue|wed|thu|fri|sat)\b/gi, '').trim();
     cleaned = cleaned.replace(/,/g, '').trim();
     cleaned = cleaned.replace(/\b(\d+)(st|nd|rd|th)\b/gi, '$1');
-    
     const hasYear = /\b(20\d{2})\b/.test(cleaned);
     if (!hasYear) {
       const currentYear = new Date().getFullYear();
       cleaned += ` ${currentYear}`;
     }
-
     let parsed = new Date(cleaned);
     if (isNaN(parsed)) {
       parsed = new Date(dateStr); 
@@ -576,11 +567,9 @@
 
   function groupHeadersByKeyword() {
     headerGroups = { staff: [], parking: [], audiolx: [], post: [] };
-    
     headers.forEach((h, idx) => {
       if (idx === dateIndex || idx === titleIndex || !h.trim()) return;
       if (isHeaderMeta(h)) return;
-      
       const lower = h.toLowerCase();
       if (lower.match(/post|setup|night/)) {
         headerGroups.post.push(h);
@@ -602,7 +591,6 @@
       if (rows.length < 2) return;
 
       headers = rows[0];
-      
       dateIndex = headers.findIndex(h => h.toLowerCase().includes('date'));
       titleIndex = headers.findIndex(h => h.toLowerCase().includes('show') && !h.toLowerCase().includes('post'));
       if (dateIndex === -1) dateIndex = 0;
@@ -617,7 +605,6 @@
         if (rows[i].length < 2 || !rows[i].join('').trim()) continue;
         const r = rows[i];
         const dateKey = r[dateIndex] || 'Unscheduled';
-        
         let show = {};
         headers.forEach((h, idx) => { show[h] = r[idx] || ''; });
 
@@ -649,7 +636,6 @@
   function findClosestFutureDateIndex() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     let closestIndex = 0;
     let smallestDiff = Infinity;
     let foundFutureOrToday = false;
@@ -659,7 +645,6 @@
       if (!isNaN(parsedDate)) {
         parsedDate.setHours(0, 0, 0, 0);
         const diff = parsedDate.getTime() - today.getTime();
-        
         if (diff >= 0 && diff < smallestDiff) {
           smallestDiff = diff;
           closestIndex = idx;
@@ -674,6 +659,16 @@
     currentDateIndex = closestIndex;
   }
 
+  function jumpToToday() {
+    findClosestFutureDateIndex();
+    activeShowIndexOnDate = 0;
+    if (currentView !== 'day') {
+      switchView('day');
+    } else {
+      renderCurrentDate();
+    }
+  }
+
   function switchView(viewName) {
     currentView = viewName;
     document.getElementById('btn-view-day').className = (viewName === 'day') ? 'active-btn' : '';
@@ -683,15 +678,17 @@
     document.getElementById('view-day').style.display = 'none';
     document.getElementById('view-3shows').style.display = 'none';
     document.getElementById('view-month').style.display = 'none';
-    
     document.getElementById(`view-${viewName}`).style.display = 'flex';
     
+    const navToday = document.getElementById('nav-today');
     const navPrev = document.getElementById('nav-prev');
     const navNext = document.getElementById('nav-next');
     if (viewName === 'day') {
+      navToday.style.display = 'inline-block';
       navPrev.style.display = 'inline-block';
       navNext.style.display = 'inline-block';
     } else {
+      navToday.style.display = 'none';
       navPrev.style.display = 'none';
       navNext.style.display = 'none';
     }
@@ -734,16 +731,11 @@
     return '—';
   }
 
-  // --- SMART STAFFING FORMATTER ---
   function getStaffingHTML(showObj, excludeCrewAndRunners = false, layout = 'column') {
     let html = [];
-    
     headerGroups.staff.forEach(h => {
       const lowerH = h.toLowerCase();
-      
-      if (excludeCrewAndRunners && (lowerH.includes('crew') || lowerH.includes('runner'))) {
-        return; 
-      }
+      if (excludeCrewAndRunners && (lowerH.includes('crew') || lowerH.includes('runner'))) return; 
       
       const val = showObj[h];
       if (val && val.trim() !== '' && val !== '-') {
@@ -774,11 +766,9 @@
     }
   }
 
-  // --- RENDER VIEW 2: 3 SHOWS ---
   function render3ShowsView() {
     const container = document.getElementById('container-3shows');
     container.innerHTML = '';
-
     const today = new Date();
     today.setHours(0,0,0,0);
 
@@ -795,12 +785,10 @@
     upcomingShows.forEach(show => {
       const title = show[headers[titleIndex]] || 'Unnamed Show';
       const date = show.__dateKey;
-      
       const promotor = getFieldValue(show, ['promot']);
       const access = getFieldValue(show, ['access']);
       const loadIn = getFieldValue(show, ['load']);
       const staffing = getStaffingHTML(show, false, 'column');
-      
       const audio = getFieldValue(show, ['audio'], ['power']);
       const lx = getFieldValue(show, ['light', 'sfx', 'lx'], ['power']);
 
@@ -835,14 +823,11 @@
     });
   }
 
-  // --- RENDER VIEW 3: ROLLING 1-MONTH ---
   function renderMonthView() {
     const tbody = document.getElementById('table-month-body');
     tbody.innerHTML = '';
-
     const today = new Date();
     today.setHours(0,0,0,0);
-    
     const oneMonthFromNow = new Date(today);
     oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
 
@@ -878,11 +863,9 @@
     });
   }
 
-  // --- RENDER ORIGINAL DAY VIEW ---
   function populatePanel(panelId, groupKeys, activeShow) {
     const container = document.getElementById(panelId);
     container.innerHTML = '';
-    
     if (groupKeys.length === 0) {
       container.innerHTML = `<div class="data-group span-2"><div class="data-value empty-val">No data available</div></div>`;
       return;
@@ -972,7 +955,6 @@
     
     const metaContainer = document.getElementById('show-meta-area');
     metaContainer.innerHTML = createMetaBadge('Date', currentDate);
-    
     headers.forEach(h => {
       if (h !== headers[dateIndex] && h !== headers[titleIndex] && isHeaderMeta(h)) {
         metaContainer.innerHTML += createMetaBadge(h, activeShow[h]);
