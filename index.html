@@ -619,7 +619,8 @@
         headerGroups.post.push(h);
       } else if (lower.match(/tech|crew|runner|manager|staff/)) {
         headerGroups.staff.push(h);
-      } else if (lower.match(/audio|lx|light|power|sfx|riser|drum|support/)) {
+      } else if (lower.match(/audio|lx|light|power|sfx|riser|drum|support|hire/)) {
+        // Hires now directed to Audio/LX panel
         headerGroups.audiolx.push(h);
       } else {
         headerGroups.parking.push(h); 
@@ -1056,11 +1057,13 @@
         if (lower.includes('fire')) return 3.2;
         if (lower.includes('foh')) return 3.3;
         if (lower.includes('accredit')) return 3.4;
+        
+        // Stage Times and Notes sorted sequentially right after admin blocks
         if (lower.includes('stage time')) return 4;
-        if (lower.includes('stage towel')) return 5;
-        if (lower.includes('bath towel')) return 6;
-        if (lower.includes('note')) return 7;
-        if (lower.includes('hire')) return 8;
+        if (lower.includes('note')) return 5;
+        
+        if (lower.includes('stage towel')) return 6;
+        if (lower.includes('bath towel')) return 7;
       } 
       else if (panelId === 'panel-audiolx') {
         if (lower === 'audio' || (lower.includes('audio') && !lower.includes('power'))) return 1;
@@ -1069,6 +1072,7 @@
         if (lower.includes('lx power')) return 4;
         if (lower.includes('riser')) return 5;
         if (lower.includes('support')) return 6;
+        if (lower.includes('hire')) return 7; // Sorted at bottom of LX panel
       }
       return 99;
     }
@@ -1076,7 +1080,9 @@
     groupKeys.sort((a, b) => getSortRank(a) - getSortRank(b));
     
     const quarterWidthMatches = ['stop', 'fire', 'foh', 'accredit'];
-    const halfWidthMatches = ['parking', 'parking code', 'lx power', 'audio power', 'stage towels', 'bath towels'];
+    
+    // Added stage time and note so they format to exactly 50% width
+    const halfWidthMatches = ['parking', 'parking code', 'lx power', 'audio power', 'stage towels', 'bath towels', 'stage time', 'note'];
     
     groupKeys.forEach(h => {
       const val = activeShow[h];
@@ -1155,6 +1161,7 @@
 
   fetchData(true);
   
+  // Background data refresh set to 10 seconds
   setInterval(() => fetchData(false), 10000); 
 </script>
 </body>
