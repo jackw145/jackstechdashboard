@@ -1086,9 +1086,9 @@
         if (lower.includes('fire')) return 3.2;
         if (lower.includes('foh')) return 3.3;
         if (lower.includes('accredit')) return 3.4;
-        if (lower.includes('stage towel')) return 4;
-        if (lower.includes('bath towel')) return 5;
-        if (lower.includes('stage time')) return 6;
+        if (lower.includes('stage') && lower.includes('towel')) return 4;
+        if (lower.includes('bath') && lower.includes('towel')) return 5;
+        if (lower.includes('time') || (lower.includes('stage') && !lower.includes('towel'))) return 6;
         if (lower.includes('note')) return 7;
       } 
       else if (panelId === 'panel-audiolx') {
@@ -1136,7 +1136,7 @@
           adminKeys.push(h);
         } else if (lower.includes('towel')) {
           towelKeys.push(h);
-        } else if (lower.includes('stage time') || lower.includes('note')) {
+        } else if (lower.includes('time') || lower.includes('stage') || lower.includes('note')) {
           stageNotesKeys.push(h);
         } else {
           extraKeys.push(h);
