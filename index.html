@@ -272,6 +272,15 @@
   .admin-2x2-grid .data-group {
     padding: clamp(3px, 0.7vh, 6px) 8px;
   }
+
+  /* Dedicated 50/50 Rows for Towels and Stage Times / Notes */
+  .parking-half-row {
+    grid-column: span 4;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    align-items: stretch;
+  }
   
   .panel-staff-row {
     padding: 10px;
@@ -453,7 +462,7 @@
     .panel-grid-layout {
       grid-template-columns: 1fr; 
     }
-    .parking-top-row {
+    .parking-top-row, .parking-half-row {
       grid-column: span 1 !important;
       grid-template-columns: 1fr;
     }
@@ -1115,7 +1124,9 @@
       const adminKw = ['stop', 'fire', 'foh', 'accredit'];
       const parkingKeys = [];
       const adminKeys = [];
-      const otherKeys = [];
+      const towelKeys = [];
+      const stageNotesKeys = [];
+      const extraKeys = [];
 
       groupKeys.forEach(h => {
         const lower = h.toLowerCase().trim();
@@ -1123,14 +1134,20 @@
           parkingKeys.push(h);
         } else if (adminKw.some(kw => lower.includes(kw))) {
           adminKeys.push(h);
+        } else if (lower.includes('towel')) {
+          towelKeys.push(h);
+        } else if (lower.includes('stage time') || lower.includes('note')) {
+          stageNotesKeys.push(h);
         } else {
-          otherKeys.push(h);
+          extraKeys.push(h);
         }
       });
 
       parkingKeys.sort((a, b) => getSortRank(a) - getSortRank(b));
       adminKeys.sort((a, b) => getSortRank(a) - getSortRank(b));
-      otherKeys.sort((a, b) => getSortRank(a) - getSortRank(b));
+      towelKeys.sort((a, b) => getSortRank(a) - getSortRank(b));
+      stageNotesKeys.sort((a, b) => getSortRank(a) - getSortRank(b));
+      extraKeys.sort((a, b) => getSortRank(a) - getSortRank(b));
 
       if (parkingKeys.length > 0 || adminKeys.length > 0) {
         let topRowHTML = '<div class="parking-top-row">';
@@ -1144,10 +1161,22 @@
         container.innerHTML += topRowHTML;
       }
 
-      otherKeys.forEach(h => {
-        const lower = h.toLowerCase().trim();
-        const cssClass = halfWidthMatches.some(kw => lower.includes(kw)) ? 'span-2' : 'span-4';
-        container.innerHTML += renderGroupBox(h, cssClass);
+      if (towelKeys.length > 0) {
+        let towelsHTML = '<div class="parking-half-row">';
+        towelKeys.forEach(h => { towelsHTML += renderGroupBox(h); });
+        towelsHTML += '</div>';
+        container.innerHTML += towelsHTML;
+      }
+
+      if (stageNotesKeys.length > 0) {
+        let stageNotesHTML = '<div class="parking-half-row">';
+        stageNotesKeys.forEach(h => { stageNotesHTML += renderGroupBox(h); });
+        stageNotesHTML += '</div>';
+        container.innerHTML += stageNotesHTML;
+      }
+
+      extraKeys.forEach(h => {
+        container.innerHTML += renderGroupBox(h, 'span-4');
       });
       return;
     }
