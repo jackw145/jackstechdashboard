@@ -255,6 +255,23 @@
     gap: 8px; 
     overflow: hidden; 
   }
+
+  /* Parking + 2x2 Admin Top Row */
+  .parking-top-row {
+    grid-column: span 4;
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    gap: 8px;
+    align-items: stretch;
+  }
+  .admin-2x2-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .admin-2x2-grid .data-group {
+    padding: clamp(3px, 0.7vh, 6px) 8px;
+  }
   
   .panel-staff-row {
     padding: 10px;
@@ -435,6 +452,10 @@
   @media (max-width: 600px) {
     .panel-grid-layout {
       grid-template-columns: 1fr; 
+    }
+    .parking-top-row {
+      grid-column: span 1 !important;
+      grid-template-columns: 1fr;
     }
     .span-1, .span-2, .span-4 {
       grid-column: span 1 !important; 
@@ -620,7 +641,6 @@
       } else if (lower.match(/tech|crew|runner|manager|staff/)) {
         headerGroups.staff.push(h);
       } else if (lower.match(/audio|lx|light|power|sfx|riser|drum|support|hire/)) {
-        // Hires now directed to Audio/LX panel
         headerGroups.audiolx.push(h);
       } else {
         headerGroups.parking.push(h); 
@@ -1057,11 +1077,8 @@
         if (lower.includes('fire')) return 3.2;
         if (lower.includes('foh')) return 3.3;
         if (lower.includes('accredit')) return 3.4;
-        
-        // Stage Times and Notes sorted sequentially right after admin blocks
         if (lower.includes('stage time')) return 4;
         if (lower.includes('note')) return 5;
-        
         if (lower.includes('stage towel')) return 6;
         if (lower.includes('bath towel')) return 7;
       } 
@@ -1072,38 +1089,77 @@
         if (lower.includes('lx power')) return 4;
         if (lower.includes('riser')) return 5;
         if (lower.includes('support')) return 6;
-        if (lower.includes('hire')) return 7; // Sorted at bottom of LX panel
+        if (lower.includes('hire')) return 7;
       }
       return 99;
     }
 
-    groupKeys.sort((a, b) => getSortRank(a) - getSortRank(b));
-    
-    const quarterWidthMatches = ['stop', 'fire', 'foh', 'accredit'];
-    
-    // Added stage time and note so they format to exactly 50% width
-    const halfWidthMatches = ['parking', 'parking code', 'lx power', 'audio power', 'stage towels', 'bath towels', 'stage time', 'note'];
-    
-    groupKeys.forEach(h => {
+    const renderGroupBox = (h, cssClass = '') => {
       const val = activeShow[h];
       const displayVal = (val && val.trim() !== '' && val !== '-') ? val : '<span class="empty-val">—</span>';
-      const lower = h.toLowerCase().trim();
-      
-      let cssClass = 'span-4'; 
-      if (panelId === 'panel-staff') {
-        cssClass = 'staff-item';
-      } else if (quarterWidthMatches.some(kw => lower.includes(kw))) {
-        cssClass = 'span-1';
-      } else if (halfWidthMatches.some(kw => lower.includes(kw))) {
-        cssClass = 'span-2';
-      }
-      
-      container.innerHTML += `
+      return `
         <div class="data-group ${cssClass}">
           <div class="data-label">${h}</div>
           <div class="data-value">${displayVal}</div>
         </div>
       `;
+    };
+
+    const halfWidthMatches = ['parking', 'parking code', 'lx power', 'audio power', 'stage towels', 'bath towels', 'stage time', 'note'];
+
+    // Special top-row layout for Parking & Admin: Parking | Parking Code | 2x2 Admin Grid
+    if (panelId === 'panel-parking') {
+      const adminKw = ['stop', 'fire', 'foh', 'accredit'];
+      const parkingKeys = [];
+      const adminKeys = [];
+      const otherKeys = [];
+
+      groupKeys.forEach(h => {
+        const lower = h.toLowerCase().trim();
+        if (lower.includes('parking')) {
+          parkingKeys.push(h);
+        } else if (adminKw.some(kw => lower.includes(kw))) {
+          adminKeys.push(h);
+        } else {
+          otherKeys.push(h);
+        }
+      });
+
+      parkingKeys.sort((a, b) => getSortRank(a) - getSortRank(b));
+      adminKeys.sort((a, b) => getSortRank(a) - getSortRank(b));
+      otherKeys.sort((a, b) => getSortRank(a) - getSortRank(b));
+
+      if (parkingKeys.length > 0 || adminKeys.length > 0) {
+        let topRowHTML = '<div class="parking-top-row">';
+        parkingKeys.forEach(h => { topRowHTML += renderGroupBox(h); });
+        if (adminKeys.length > 0) {
+          topRowHTML += '<div class="admin-2x2-grid">';
+          adminKeys.forEach(h => { topRowHTML += renderGroupBox(h); });
+          topRowHTML += '</div>';
+        }
+        topRowHTML += '</div>';
+        container.innerHTML += topRowHTML;
+      }
+
+      otherKeys.forEach(h => {
+        const lower = h.toLowerCase().trim();
+        const cssClass = halfWidthMatches.some(kw => lower.includes(kw)) ? 'span-2' : 'span-4';
+        container.innerHTML += renderGroupBox(h, cssClass);
+      });
+      return;
+    }
+
+    groupKeys.sort((a, b) => getSortRank(a) - getSortRank(b));
+    
+    groupKeys.forEach(h => {
+      const lower = h.toLowerCase().trim();
+      let cssClass = 'span-4'; 
+      if (panelId === 'panel-staff') {
+        cssClass = 'staff-item';
+      } else if (halfWidthMatches.some(kw => lower.includes(kw))) {
+        cssClass = 'span-2';
+      }
+      container.innerHTML += renderGroupBox(h, cssClass);
     });
   }
 
